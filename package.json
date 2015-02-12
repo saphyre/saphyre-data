@@ -1,0 +1,20 @@
+{
+  "name": "saphyre-data",
+  "version": "0.0.1",
+  "description": "Saphyre Data",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "saphyre",
+    "data",
+    "module"
+  ],
+  "author": "Sérgio Marcelino (sergiofilhow@gmail.com)",
+  "license": "ISC",
+  "dependencies": {
+    "lodash": "^3.1.0",
+    "squel": "^3.10.0"
+  }
+}
