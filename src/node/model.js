@@ -9,14 +9,36 @@ var defaults = _.partialRight(_.assign, function (value, other) {
     return value === undefined ? other : value;
 });
 
-function Model(model) {
+function Model(provider, options) {
+    var model;
+    if (options.model) {
+        model = options.model;
+    } else {
+        model = options;
+        options = {};
+    }
+
+    if (options.cached) {
+        this.cached = true;
+        this.timeout = options.timeout;
+        this.cache = {
+            timestamp : undefined,
+            result : undefined
+        };
+    }
+
     this.model = model;
     this.Promise = model.sequelize.Promise;
 
+    this.provider = provider;
     this.relationships = [];
     this.criterias = {};
     this.sorts = {};
     this.projections = {};
+}
+
+function diffFromNow(date) {
+    return new Date().getTime() - date.getTime();
 }
 
 Model.prototype.criteria = function (name, config) {
@@ -45,14 +67,24 @@ Model.prototype.sort = function (name, config) {
 };
 
 Model.prototype.requestList = function (config) {
-    var builder = new QueryBuilder(this.model),
+    var self = this,
+        handlers = [],
+        builder = new QueryBuilder(this.model, this.provider, handlers),
         projection,
         criterias = this.criterias,
         Promise = this.Promise,
-        sort;
+        sort,
+        isCached;
+
+    config = config || {};
+    isCached = !config.page && !config.pageSize && this.cached;
 
     if (config.projection === undefined) {
-        return this.Promise.reject('No projection selected');
+        config.projection = 'default';
+    }
+
+    if (isCached && this.cache.timestamp && diffFromNow(this.cache.timestamp) < this.timeout) {
+        return Promise.resolve(this.cache.result);
     }
 
     projection = this.projections[config.projection];
@@ -73,7 +105,7 @@ Model.prototype.requestList = function (config) {
         builder.sort(sort);
     }
 
-    if (config.criteria) {
+    if (config.criteria !== undefined) {
         try {
             _.forEach(config.criteria, function (values, name) {
                 var criteria = criterias[name];
@@ -91,10 +123,11 @@ Model.prototype.requestList = function (config) {
         builder.query.page(config.page, config.pageSize);
     }
 
-    return builder.query.exec().then(function (result) {
-        var handlers = [];
-
+    return builder.exec().then(function (result) {
         _.forEach(projection.config, function (alias) {
+            if (_.isObject(alias)) {
+                alias = alias.alias;
+            }
             if (alias.indexOf('.') > 0) {
                 var split = alias.split('.');
                 handlers.push(function (item) {
@@ -125,6 +158,10 @@ Model.prototype.requestList = function (config) {
             });
         });
 
+        if (isCached) {
+            self.cache.timestamp = new Date();
+            self.cache.result = result;
+        }
         return Promise.resolve(result);
     });
 

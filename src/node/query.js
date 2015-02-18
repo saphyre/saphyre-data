@@ -4,7 +4,7 @@ function Query(sequelize, Promise) {
     this.sequelize = sequelize;
     this.Promise = Promise;
     this.selectQuery = squel.select();
-    this.countQuery = squel.select().field('COUNT(*)', 'count');
+    this.countQuery = squel.select().field('0');
 }
 
 Query.prototype.distinct = function () {
@@ -91,19 +91,26 @@ Query.prototype.join = function () {
 };
 
 Query.prototype.exec = function () {
-    var Promise = this.Promise;
+    var Promise = this.Promise,
+        pageSize = this.pageSize,
+        page = this.page;
+
     return Promise.all([
         this.list(),
         this.count()
     ]).spread(function (result, count) {
         return Promise.resolve({
             list : result,
-            count : count
+            count : count,
+            page : page,
+            pages : Math.round(count / pageSize + 0.4)
         });
     });
 };
 
 Query.prototype.page = function (page, size) {
+    this.pageSize = size;
+    this.page = page;
     this.offset((page - 1) * size).limit(size);
     return this;
 };
@@ -126,10 +133,10 @@ Query.prototype.single = function () {
 };
 
 Query.prototype.count = function () {
-    var count = this.countQuery.toString(),
+    var query = 'SELECT COUNT(*) as count FROM (' + this.countQuery.toString() + ') c',
         Promise = this.Promise;
 
-    return this.sequelize.query(count).then(function (countResult) {
+    return this.sequelize.query(query).then(function (countResult) {
         return Promise.resolve(countResult[0].count);
     });
 };
