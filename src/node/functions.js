@@ -1,3 +1,8 @@
+/*
+ * TODO
+ * As funções abaixo só funcionam no MySQL, deve ser feito um tratamento para
+ * identificar o dialeto utilizado no Sequelize e utilizar a função de acordo com o SGBD.
+ */
 module.exports = {
 
     convert : function (path, model, options) {
