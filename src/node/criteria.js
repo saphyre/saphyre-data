@@ -77,8 +77,8 @@ function has(queryBuilder, values, path) {
 }
 
 Criteria.prototype.OPERATOR = {
-    NOT_EQUAL : equal,
-    EQUAL : notEqual,
+    NOT_EQUAL : notEqual,
+    EQUAL : equal,
     LESS_EQUAL : lessEqual,
     GREATER_EQUAL : greaterEqual,
     LESS_THAN : lessThan,

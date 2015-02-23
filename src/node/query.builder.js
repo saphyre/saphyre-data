@@ -53,7 +53,6 @@ QueryBuilder.prototype.projection = function (projection) {
         } else {
             if (field.hasMany) {
                 associatedModel = provider.getModel(field.model);
-                console.log(field.model.name, associatedModel);
                 if (!associatedModel || !associatedModel.cached) {
                     throw new Error('Association is HasMany and there`s no cached SaphydeData Model');
                 }
@@ -64,7 +63,7 @@ QueryBuilder.prototype.projection = function (projection) {
                     });
                     handlers.push(function (item) {
                         var list = [],
-                            split = item[alias].split(',');
+                            split = item[alias] ? item[alias].split(',') : [];
 
                         _.forEach(split, function (id) {
                             list.push(map[id]);
