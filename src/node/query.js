@@ -103,7 +103,7 @@ Query.prototype.exec = function () {
             list : result,
             count : count,
             page : page,
-            pages : Math.round(count / pageSize + 0.4)
+            pages : Math.ceil(count / pageSize)
         });
     });
 };
