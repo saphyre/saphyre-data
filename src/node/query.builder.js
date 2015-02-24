@@ -2,7 +2,7 @@ var Query = require('./query'),
     _ = require('lodash'),
     functions = require('./functions');
 
-function QueryBuilder(model, provider, handlers) {
+function QueryBuilder(model, provider) {
     this.provider = provider;
     this.count = 0;
     this.center = this.createAlias(model.name);
@@ -12,7 +12,7 @@ function QueryBuilder(model, provider, handlers) {
 
     this.query.from(model.options.tableName, this.center);
     this.associations = {};
-    this.handlers = handlers;
+    this.handlers = [];
     this.globalHandlers = [];
 }
 
@@ -34,6 +34,7 @@ QueryBuilder.prototype.projection = function (projection) {
         associatedModel,
         globalHandlers = this.globalHandlers;
 
+    this.projection = projection;
     projection = projection.config;
 
     _.forEach(this.model.primaryKeys, function (pk) {
@@ -88,6 +89,15 @@ QueryBuilder.prototype.exec = function () {
         return query.exec();
     });
 };
+
+QueryBuilder.prototype.single = function () {
+    var query = this.query;
+    return this.Promise.all(this.globalHandlers).spread(function () {
+        return query.single();
+    });
+};
+
+
 
 QueryBuilder.prototype.sort = function (sort) {
 

@@ -17,6 +17,9 @@ Criteria.prototype.apply = function (queryBuilder, values) {
             vl = values[item.name];
 
         if (value !== undefined) {
+            if (_.isFunction(value)) {
+                value = value();
+            }
             operator(queryBuilder, value, property);
         } else {
             operator(queryBuilder, vl, property);

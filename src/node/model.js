@@ -52,10 +52,6 @@ Model.prototype.projection = function (name, config) {
     return projection;
 };
 
-Model.prototype.getProjection = function (name) {
-    return this.projections[name];
-};
-
 Model.prototype.relationship = function (path) {
     this.relationships.push(new Relationship(path));
     return this;
@@ -66,25 +62,17 @@ Model.prototype.sort = function (name, config) {
     return this;
 };
 
-Model.prototype.requestList = function (config) {
-    var self = this,
-        handlers = [],
-        builder = new QueryBuilder(this.model, this.provider, handlers),
+Model.prototype.buildQuery = function (config) {
+    var builder = new QueryBuilder(this.model, this.provider),
         projection,
         criterias = this.criterias,
         Promise = this.Promise,
-        sort,
-        isCached;
+        sort;
 
     config = config || {};
-    isCached = !config.page && !config.pageSize && this.cached;
 
     if (config.projection === undefined) {
         config.projection = 'default';
-    }
-
-    if (isCached && this.cache.timestamp && diffFromNow(this.cache.timestamp) < this.timeout) {
-        return Promise.resolve(this.cache.result);
     }
 
     projection = this.projections[config.projection];
@@ -123,40 +111,67 @@ Model.prototype.requestList = function (config) {
         builder.query.page(config.page, config.pageSize);
     }
 
-    return builder.exec().then(function (result) {
-        _.forEach(projection.config, function (alias) {
-            if (_.isObject(alias)) {
-                alias = alias.alias;
-            }
-            if (alias.indexOf('.') > 0) {
-                var split = alias.split('.');
-                handlers.push(function (item) {
-                    var parent = item,
-                        object = parent[alias];
-                    _.forEach(split, function (subitem, index) {
-                        if (index + 1 < split.length) {
-                            if (item[subitem] === undefined) {
-                                item[subitem] = {};
-                            }
-                            item = item[subitem];
-                        } else {
-                            item[subitem] = object;
-                            delete parent[alias];
+    return builder;
+};
+
+Model.prototype.postProcess = function (builder) {
+    _.forEach(builder.projection.config, function (alias) {
+        if (_.isObject(alias)) {
+            alias = alias.alias;
+        }
+        if (alias.indexOf('.') > 0) {
+            var split = alias.split('.');
+            builder.handlers.push(function (item) {
+                var parent = item,
+                    object = parent[alias];
+                _.forEach(split, function (subitem, index) {
+                    if (index + 1 < split.length) {
+                        if (item[subitem] === undefined) {
+                            item[subitem] = {};
                         }
-                    });
+                        item = item[subitem];
+                    } else {
+                        item[subitem] = object;
+                        delete parent[alias];
+                    }
                 });
-            }
-        });
-
-        _.forEach(result.list, function (item) {
-            _.forEach(handlers, function (handler) {
-                handler(item);
             });
+        }
+    });
+};
 
-            _.forEach(projection.middlewares, function (middleware) {
-                middleware(item);
-            });
-        });
+Model.prototype.processList = function (builder, list) {
+    _.forEach(list, function (item) {
+        this.processItem(builder, item);
+    }, this);
+};
+
+Model.prototype.processItem = function (builder, item) {
+    _.forEach(builder.handlers, function (handler) {
+        handler(item);
+    });
+
+    _.forEach(builder.projection.middlewares, function (middleware) {
+        middleware(item);
+    });
+};
+
+Model.prototype.requestList = function (config) {
+    var self = this,
+        builder = this.buildQuery(config),
+        Promise = this.Promise,
+        isCached;
+
+    config = config || {};
+    isCached = !config.page && !config.pageSize && this.cached;
+
+    if (isCached && this.cache.timestamp && diffFromNow(this.cache.timestamp) < this.timeout) {
+        return Promise.resolve(this.cache.result);
+    }
+
+    return builder.exec().then(function (result) {
+        self.postProcess(builder);
+        self.processList(builder, result.list);
 
         if (isCached) {
             self.cache.timestamp = new Date();
@@ -164,7 +179,19 @@ Model.prototype.requestList = function (config) {
         }
         return Promise.resolve(result);
     });
+};
 
+Model.prototype.single = function (config) {
+    var self = this,
+        Promise = this.Promise,
+        builder = this.buildQuery(config);
+
+    return builder.single().then(function (result) {
+        self.postProcess(builder);
+        self.processItem(builder, result);
+
+        return Promise.resolve(result);
+    });
 };
 
 Model.prototype.requestRelated = function () {

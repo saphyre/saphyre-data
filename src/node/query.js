@@ -102,7 +102,7 @@ Query.prototype.exec = function () {
         return Promise.resolve({
             list : result,
             count : count,
-            page : page,
+            page : parseInt(page, 10),
             pages : Math.ceil(count / pageSize)
         });
     });
