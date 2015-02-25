@@ -169,10 +169,11 @@ QueryBuilder.prototype.applyPath = function (path) {
 
         } else {
             if (index + 1 < split.length) {
-                throw new Error('Association `' + item + '` not found');
+                console.log(assoc, split, model.associations, model);
+                throw new Error('Association `' + item + '` not found on ' + model.name);
             }
             if (model.rawAttributes[item] === undefined) {
-                throw new Error('Attribute`' + item + '` not found');
+                throw new Error('Attribute`' + item + '` not found on ' + model.name);
             }
             result.property = item;
         }

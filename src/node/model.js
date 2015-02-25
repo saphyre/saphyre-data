@@ -122,19 +122,21 @@ Model.prototype.postProcess = function (builder) {
         if (alias.indexOf('.') > 0) {
             var split = alias.split('.');
             builder.handlers.push(function (item) {
-                var parent = item,
-                    object = parent[alias];
-                _.forEach(split, function (subitem, index) {
-                    if (index + 1 < split.length) {
-                        if (item[subitem] === undefined) {
-                            item[subitem] = {};
+                if (item !== undefined) {
+                    var parent = item,
+                        object = parent[alias];
+                    _.forEach(split, function (subitem, index) {
+                        if (index + 1 < split.length) {
+                            if (item[subitem] === undefined) {
+                                item[subitem] = {};
+                            }
+                            item = item[subitem];
+                        } else {
+                            item[subitem] = object;
+                            delete parent[alias];
                         }
-                        item = item[subitem];
-                    } else {
-                        item[subitem] = object;
-                        delete parent[alias];
-                    }
-                });
+                    });
+                }
             });
         }
     });
@@ -147,13 +149,15 @@ Model.prototype.processList = function (builder, list) {
 };
 
 Model.prototype.processItem = function (builder, item) {
-    _.forEach(builder.handlers, function (handler) {
-        handler(item);
-    });
+    if (item !== undefined) {
+        _.forEach(builder.handlers, function (handler) {
+            handler(item);
+        });
 
-    _.forEach(builder.projection.middlewares, function (middleware) {
-        middleware(item);
-    });
+        _.forEach(builder.projection.middlewares, function (middleware) {
+            middleware(item);
+        });
+    }
 };
 
 Model.prototype.requestList = function (config) {
