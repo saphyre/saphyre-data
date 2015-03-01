@@ -75,6 +75,18 @@ function between(queryBuilder, values, path) {
     queryBuilder.query.where(property + ' BETWEEN ? AND ?', values[0], values[1]);
 }
 
+function criteriaIn(queryBuilder, values, path) {
+    var property = queryBuilder.applyPath(path).property;
+    queryBuilder.query.where(property + ' IN ?', values);
+}
+
+function notIn(queryBuilder, values, path) {
+    if (values && values.length > 0) {
+        var property = queryBuilder.applyPath(path).property;
+        queryBuilder.query.where(property + ' NOT IN ?', values);
+    }
+}
+
 function has(queryBuilder, values, path) {
     // TODO
 }
@@ -89,7 +101,9 @@ Criteria.prototype.OPERATOR = {
     LIKE : like,
     ILIKE : ilike,
     BETWEEN : between,
-    HAS : has
+    HAS : has,
+    IN : criteriaIn,
+    NOT_IN : notIn
 };
 
 module.exports = Criteria;

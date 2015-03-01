@@ -2,6 +2,8 @@ var Model = require('./model'),
     Criteria = require('./criteria'),
     Query = require('./query');
 
+require('./squel.custom');
+
 function Provider() {
     this.models = {};
 }
