@@ -30,16 +30,13 @@ QueryBuilder.prototype.projection = function (projection) {
     var provider = this.provider,
         model = this.model,
         handlers = this.handlers,
-        pkName,
+        pkName = this.model.primaryKeyAttribute,
         associatedModel,
         globalHandlers = this.globalHandlers;
 
     this.projection = projection;
     projection = projection.config;
 
-    _.forEach(this.model.primaryKeys, function (pk) {
-        pkName = pk.fieldName;
-    });
     if (pkName) {
         pkName = this.applyPath(pkName);
         this.query.field(pkName.property, '$id');
@@ -48,10 +45,12 @@ QueryBuilder.prototype.projection = function (projection) {
 
     _.forEach(projection, function (alias, path) {
 
-        var field = this.applyPath(path);
+        var field;
         if (_.isObject(alias)) {
+            field = this.applyPath(path, alias.joinType == 'inner');
             this.query.field(alias.func(field.property, model, alias.options), alias.alias);
         } else {
+            field = this.applyPath(path);
             if (field.hasMany) {
                 associatedModel = provider.getModel(field.model);
                 if (!associatedModel || !associatedModel.cached) {
@@ -102,22 +101,33 @@ QueryBuilder.prototype.single = function () {
 QueryBuilder.prototype.sort = function (sort) {
 
     sort = sort.config;
-    _.forEach(sort, function (direction, path) {
+    _.forEach(sort, function (config, path) {
+        var field;
 
-        var field = this.applyPath(path);
-        this.query.order(field.property, direction === 'ASC');
+        if (_.isObject(config)) {
+            if (config.raw) {
+                this.query.order(path, config.direction === 'ASC');
+            } else {
+                field = this.applyPath(path);
+                this.query.order(field.property, config.direction === 'ASC');
+            }
+        } else {
+            field = this.applyPath(path);
+            this.query.order(field.property, config === 'ASC');
+        }
 
     }, this);
 
     return this;
 };
 
-QueryBuilder.prototype.applyPath = function (path) {
+QueryBuilder.prototype.applyPath = function (path, joinInner) {
     var split = path.split('.'),
         model = this.model,
         result = { table : this.center },
         realPath = '',
-        hasMany = false;
+        hasMany = false,
+        join = joinInner ? this.query.join : this.query.left_join;
 
     _.forEach(split, function (item, index) {
 
@@ -142,16 +152,16 @@ QueryBuilder.prototype.applyPath = function (path) {
                     hasMany = true;
                     if (assoc.doubleLinked) {
                         joinTable = oldTable + '_' + result.table;
-                        this.query.left_join(assoc.combinedName, joinTable,
+                        join.call(this.query, assoc.combinedName, joinTable,
                             oldTable + '.' + assoc.foreignKey + ' = ' + joinTable + '.' + assoc.identifier);
-                        this.query.left_join(model.options.tableName, result.table,
+                        join.call(this.query, model.options.tableName, result.table,
                             joinTable + '.' + assoc.foreignIdentifier + ' = ' + result.table + '.' + assoc.foreignIdentifier);
                     } else {
-                        // TODO
-                        throw new Error('Not implemented');
+                        join.call(this.query, model.options.tableName, result.table,
+                            oldTable + '.' + assoc.source.primaryKeyAttribute + ' = ' + result.table + '.' + assoc.foreignKey);
                     }
                 } else if (assoc.associationType === 'HasOne') {
-                    this.query.left_join(model.options.tableName, result.table,
+                    join.call(this.query, model.options.tableName, result.table,
                         oldTable + '.' + assoc.foreignKey + ' = ' + result.table + '.' + assoc.identifier);
                 } else if (assoc.associationType === 'BelongsTo') {
                     this.query.join(model.options.tableName, result.table,
@@ -160,20 +170,17 @@ QueryBuilder.prototype.applyPath = function (path) {
             }
 
             if (hasMany) {
-                _.forEach(model.primaryKeys, function (pk) {
-                    result.property = pk.fieldName;
-                });
+                result.property = model.primaryKeyAttribute;
             } else if (index + 1 === split.length) {
                 throw new Error('Can`t select an entire Association');
             }
 
         } else {
             if (index + 1 < split.length) {
-                console.log(assoc, split, model.associations, model);
                 throw new Error('Association `' + item + '` not found on ' + model.name);
             }
             if (model.rawAttributes[item] === undefined) {
-                throw new Error('Attribute`' + item + '` not found on ' + model.name);
+                throw new Error('Attribute `' + item + '` not found on ' + model.name);
             }
             result.property = item;
         }

@@ -60,6 +60,21 @@ So if we create a relationship on **Article** with **Tag** and **Newsletter** wi
         console.log(article);
     });
     
+Its possible to use functions on a projection
+
+    'Tags.tag_id' : {
+        alias : 'tags_count',
+        func : SaphyreData.functions.count
+    }
+    
+For HasMany and HasOne the QueryBuilder will LEFT JOIN the table, if you want to INNER JOIN the table:
+
+    'Tags.tag_id' : {
+        alias : 'tags_count',
+        func : SaphyreData.functions.count,
+        joinType : 'inner' // case sensitive
+    }
+    
 #### Console output for each row
     {
         "id" : 1,
@@ -98,11 +113,31 @@ There's an option to pass a static value to criteria parameters:
         value : ArticleStatus.REMOVED
     });
     
+It's also possible to use dynamic values, passing a function will evoke everytime a query is constructed.
+
+    model.criteria('today', {
+        name : 'date',
+        property : 'publish_dt',
+        operator : SaphyreData.OPERATOR.GREATER_EQUAL,
+        value : function () {
+            return new Date();
+        }
+    });
+    
 **Note:** Currently there's no option to use OR operator to join expressions
 
 ### Sort
 
     model.sort('recent', { 'publish_dt' : 'DESC' });
+    
+It's possible to sort on a RAW text, like alias.
+
+    model.sort('recent', {
+        'publish_dt' : {
+            raw : true,
+            direction : 'DESC'
+        }
+    });
     
     
 ## Data retrieval
@@ -119,6 +154,17 @@ There's an option to pass a static value to criteria parameters:
     }).then(function (result) {
         // result.list -> the list
         // result.count -> the total elements
+    });
+    
+    model.single({
+        projection : 'list',
+        criteria : {
+            'non-removed' : true, // in this case, there's no value to pass
+            'author' : 1 // it's possible to use 0..N criterias
+        },
+        sort : 'recent'
+    }).then(function (theFirstItem) {
+        
     });
     
 ## Operators

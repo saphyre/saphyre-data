@@ -182,7 +182,7 @@ Model.prototype.requestList = function (config) {
             return Promise.resolve(result);
         });
     } catch (err) {
-        return Promise.reject(err.message);
+        return Promise.reject(err);
     }
 };
 

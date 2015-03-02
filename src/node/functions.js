@@ -5,13 +5,21 @@
  */
 module.exports = {
 
-    convert : function (path, model, options) {
+    convert : function (path, model, options) { // TODO apenas MySQL
         var charset = options && options.charset ? options.charset : 'utf8';
         return 'CONVERT(' + path + ' USING ' + charset + ')';
     },
 
-    group_concat : function (path) {
+    group_concat : function (path) { // TODO apenas MySQL
         return 'GROUP_CONCAT(' + path + ')';
+    },
+
+    sum : function (path) {
+        return 'SUM(' + path + ')';
+    },
+
+    count : function (path) {
+        return 'COUNT(' + path + ')';
     }
 
 };
