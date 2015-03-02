@@ -66,7 +66,6 @@ Model.prototype.buildQuery = function (config) {
     var builder = new QueryBuilder(this.model, this.provider),
         projection,
         criterias = this.criterias,
-        Promise = this.Promise,
         sort;
 
     config = config || {};
@@ -78,7 +77,7 @@ Model.prototype.buildQuery = function (config) {
     projection = this.projections[config.projection];
 
     if (projection === undefined) {
-        return Promise.reject('Undefined projection `' + config.projection + '`');
+        throw new Error('Undefined projection `' + config.projection + '`');
     }
 
     builder.projection(projection);
@@ -87,24 +86,20 @@ Model.prototype.buildQuery = function (config) {
         sort = this.sorts[config.sort];
 
         if (sort === undefined) {
-            return Promise.reject('Undefined sort `' + config.sort + '`');
+            throw new Error('Undefined sort `' + config.sort + '`');
         }
 
         builder.sort(sort);
     }
 
     if (config.criteria !== undefined) {
-        try {
-            _.forEach(config.criteria, function (values, name) {
-                var criteria = criterias[name];
-                if (criteria === undefined) {
-                    throw new Error('Criteria named `' + name + '` not found');
-                }
-                criteria.apply(builder, values);
-            });
-        } catch (err) {
-            return Promise.reject(err.message);
-        }
+        _.forEach(config.criteria, function (values, name) {
+            var criteria = criterias[name];
+            if (criteria === undefined) {
+                throw new Error('Criteria named `' + name + '` not found');
+            }
+            criteria.apply(builder, values);
+        });
     }
 
     if (config.page && config.pageSize) {
@@ -162,27 +157,33 @@ Model.prototype.processItem = function (builder, item) {
 
 Model.prototype.requestList = function (config) {
     var self = this,
-        builder = this.buildQuery(config),
         Promise = this.Promise,
+        builder,
         isCached;
 
-    config = config || {};
-    isCached = !config.page && !config.pageSize && this.cached;
+    try {
+        builder = this.buildQuery(config);
 
-    if (isCached && this.cache.timestamp && diffFromNow(this.cache.timestamp) < this.timeout) {
-        return Promise.resolve(this.cache.result);
-    }
+        config = config || {};
+        isCached = !config.page && !config.pageSize && this.cached;
 
-    return builder.exec().then(function (result) {
-        self.postProcess(builder);
-        self.processList(builder, result.list);
-
-        if (isCached) {
-            self.cache.timestamp = new Date();
-            self.cache.result = result;
+        if (isCached && this.cache.timestamp && diffFromNow(this.cache.timestamp) < this.timeout) {
+            return Promise.resolve(this.cache.result);
         }
-        return Promise.resolve(result);
-    });
+
+        return builder.exec().then(function (result) {
+            self.postProcess(builder);
+            self.processList(builder, result.list);
+
+            if (isCached) {
+                self.cache.timestamp = new Date();
+                self.cache.result = result;
+            }
+            return Promise.resolve(result);
+        });
+    } catch (err) {
+        return Promise.reject(err.message);
+    }
 };
 
 Model.prototype.single = function (config) {
