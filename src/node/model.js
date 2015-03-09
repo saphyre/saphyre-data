@@ -109,52 +109,6 @@ Model.prototype.buildQuery = function (config) {
     return builder;
 };
 
-Model.prototype.postProcess = function (builder) {
-    _.forEach(builder.projection.config, function (alias) {
-        if (_.isObject(alias)) {
-            alias = alias.alias;
-        }
-        if (alias.indexOf('.') > 0) {
-            var split = alias.split('.');
-            builder.handlers.push(function (item) {
-                if (item !== undefined) {
-                    var parent = item,
-                        object = parent[alias];
-                    _.forEach(split, function (subitem, index) {
-                        if (index + 1 < split.length) {
-                            if (item[subitem] === undefined) {
-                                item[subitem] = {};
-                            }
-                            item = item[subitem];
-                        } else {
-                            item[subitem] = object;
-                            delete parent[alias];
-                        }
-                    });
-                }
-            });
-        }
-    });
-};
-
-Model.prototype.processList = function (builder, list) {
-    _.forEach(list, function (item) {
-        this.processItem(builder, item);
-    }, this);
-};
-
-Model.prototype.processItem = function (builder, item) {
-    if (item !== undefined) {
-        _.forEach(builder.handlers, function (handler) {
-            handler(item);
-        });
-
-        _.forEach(builder.projection.middlewares, function (middleware) {
-            middleware(item);
-        });
-    }
-};
-
 Model.prototype.requestList = function (config) {
     var self = this,
         Promise = this.Promise,
@@ -172,8 +126,6 @@ Model.prototype.requestList = function (config) {
         }
 
         return builder.exec().then(function (result) {
-            self.postProcess(builder);
-            self.processList(builder, result.list);
 
             if (isCached) {
                 self.cache.timestamp = new Date();
@@ -187,16 +139,8 @@ Model.prototype.requestList = function (config) {
 };
 
 Model.prototype.single = function (config) {
-    var self = this,
-        Promise = this.Promise,
-        builder = this.buildQuery(config);
-
-    return builder.single().then(function (result) {
-        self.postProcess(builder);
-        self.processItem(builder, result);
-
-        return Promise.resolve(result);
-    });
+    var builder = this.buildQuery(config);
+    return builder.single();
 };
 
 Model.prototype.requestRelated = function () {

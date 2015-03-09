@@ -14,33 +14,26 @@ function QueryBuilder(model, provider) {
     this.associations = {};
     this.handlers = [];
     this.globalHandlers = [];
+    this.postProcesses = [];
 }
 
-QueryBuilder.prototype.toString = function () {
-    return this.query.toString();
-};
+function applyProjection(builder, projection, grouped) {
 
-QueryBuilder.prototype.createAlias = function (name) {
-    this.count += 1;
-    return name + '_' + this.count;
-};
-
-QueryBuilder.prototype.projection = function (projection) {
-
-    var provider = this.provider,
-        model = this.model,
-        handlers = this.handlers,
-        pkName = this.model.primaryKeyAttribute,
+    var provider = builder.provider,
+        model = builder.model,
+        handlers = builder.handlers,
+        pkName = builder.model.primaryKeyAttribute,
         associatedModel,
-        globalHandlers = this.globalHandlers;
+        globalHandlers = builder.globalHandlers;
 
-    this.projection = projection;
-    projection = projection.config;
+    if (grouped === undefined) {
+        grouped = true;
+    }
 
-    if (pkName) {
-        pkName = this.applyPath(pkName);
-        this.query.field(pkName.property, '$id');
-        this.query.group(pkName.property);
+    if (pkName && grouped) {
+        pkName = builder.applyPath(pkName);
+        builder.query.field(pkName.property, '$id');
+        builder.query.group(pkName.property);
     }
 
     _.forEach(projection, function (alias, path) {
@@ -75,28 +68,96 @@ QueryBuilder.prototype.projection = function (projection) {
             } else {
                 this.query.field(field.property, alias);
             }
+            this.createHandler(alias);
         }
 
-    }, this);
+    }, builder);
+
+    return this;
+}
+
+QueryBuilder.prototype.toString = function () {
+    return this.query.toString();
+};
+
+QueryBuilder.prototype.createAlias = function (name) {
+    this.count += 1;
+    return name + '_' + this.count;
+};
+
+QueryBuilder.prototype.projection = function (projection) {
+
+    this.projection = projection;
+    applyProjection(this, projection.config);
 
     return this;
 };
 
+QueryBuilder.prototype.createHandler = function (alias) {
+    if (_.isObject(alias) && alias.alias) {
+        alias = alias.alias;
+    }
+    if (alias.indexOf('.') > 0) {
+        var split = alias.split('.');
+        this.handlers.push(function (item) {
+            if (item !== undefined) {
+                var parent = item,
+                    object = parent[alias];
+                _.forEach(split, function (subitem, index) {
+                    if (index + 1 < split.length) {
+                        if (item[subitem] === undefined) {
+                            item[subitem] = {};
+                        }
+                        item = item[subitem];
+                    } else {
+                        item[subitem] = object;
+                        delete parent[alias];
+                    }
+                });
+            }
+        });
+    }
+};
+
 QueryBuilder.prototype.exec = function () {
-    var query = this.query;
+    var builder = this,
+        query = this.query;
     return this.Promise.all(this.globalHandlers).spread(function () {
-        return query.exec();
+        return query.exec().then(function (result) {
+            builder.processList(result.list);
+            return result;
+        });
     });
 };
 
 QueryBuilder.prototype.single = function () {
-    var query = this.query;
+    var builder = this,
+        query = this.query;
     return this.Promise.all(this.globalHandlers).spread(function () {
-        return query.single();
+        return query.single().then(function (result) {
+            builder.processItem(result);
+            return result;
+        });
     });
 };
 
+QueryBuilder.prototype.processList = function (list) {
+    _.forEach(list, function (item) {
+        console.log(item);
+        this.processItem(item);
+    }, this);
+};
 
+QueryBuilder.prototype.processItem = function (item) {
+    if (item !== undefined) {
+        _.forEach(this.handlers, function (handler) {
+            handler(item);
+        });
+        _.forEach(this.projection.middlewares, function (handler) {
+            handler(item);
+        });
+    }
+};
 
 QueryBuilder.prototype.sort = function (sort) {
 
