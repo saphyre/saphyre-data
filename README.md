@@ -67,6 +67,19 @@ Its possible to use functions on a projection
         func : SaphyreData.functions.count
     }
     
+If you want to create aditional queries (for each row), necessary in HasMany:
+
+    'Tags' : {
+        list : 'tags', // the name of the result list in each row
+        projection : {
+            'tag_id' : 'id'
+            'name' : 'name' // internally Tags.name
+        },
+        sort : { // optional
+            'name' : 'ASC'
+        }
+    }
+    
 For HasMany and HasOne the QueryBuilder will LEFT JOIN the table, if you want to INNER JOIN the table:
 
     'Tags.tag_id' : {

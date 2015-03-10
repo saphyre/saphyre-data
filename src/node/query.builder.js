@@ -1,6 +1,7 @@
 var Query = require('./query'),
     _ = require('lodash'),
-    functions = require('./functions');
+    functions = require('./functions'),
+    Criteria = require('./criteria');
 
 function QueryBuilder(model, provider) {
     this.provider = provider;
@@ -17,34 +18,69 @@ function QueryBuilder(model, provider) {
     this.postProcesses = [];
 }
 
-function applyProjection(builder, projection, grouped) {
+function applySort(builder, sort, preffix) {
+    _.forEach(sort, function (config, path) {
+        var field;
+
+        if (preffix) {
+            path = preffix + '.' + path;
+        }
+
+        if (_.isObject(config)) {
+            if (config.raw) {
+                this.query.order(path, config.direction === 'ASC');
+            } else {
+                field = this.applyPath(path);
+                this.query.order(field.property, config.direction === 'ASC');
+            }
+        } else {
+            field = this.applyPath(path);
+            this.query.order(field.property, config === 'ASC');
+        }
+
+    }, builder);
+}
+
+function applyProjection(builder, projection, preffix, grouped, inner) {
 
     var provider = builder.provider,
         model = builder.model,
         handlers = builder.handlers,
-        pkName = builder.model.primaryKeyAttribute,
         associatedModel,
-        globalHandlers = builder.globalHandlers;
-
-    if (grouped === undefined) {
-        grouped = true;
-    }
-
-    if (pkName && grouped) {
-        pkName = builder.applyPath(pkName);
-        builder.query.field(pkName.property, '$id');
-        builder.query.group(pkName.property);
-    }
+        globalHandlers = builder.globalHandlers,
+        pkName = builder.model.primaryKeyAttribute;
 
     _.forEach(projection, function (alias, path) {
 
         var field;
+
+        if (preffix) {
+            path = preffix + '.' + path;
+        }
+
         if (_.isObject(alias)) {
-            field = this.applyPath(path, alias.joinType == 'inner');
-            this.query.field(alias.func(field.property, model, alias.options), alias.alias);
+
+            if (alias.list && alias.projection) {
+                this.postProcesses.push(function (item) {
+                    var queryBuilder = new QueryBuilder(builder.model, builder.provider);
+                    applyProjection(queryBuilder, alias.projection, path, false, true);
+                    if (alias.sort) {
+                        applySort(queryBuilder, alias.sort, path);
+                    }
+                    Criteria.prototype.OPERATOR.EQUAL(queryBuilder, item.$id, pkName);
+                    return queryBuilder.list().then(function (list) {
+                        item[alias.list] = list;
+                    });
+                });
+            } else {
+                field = this.applyPath(path, alias.joinType == 'inner');
+                this.query.field(alias.func(field.property, model, alias.options), alias.alias);
+                this.createHandler(alias.alias);
+            }
+
         } else {
-            field = this.applyPath(path);
-            if (field.hasMany) {
+            field = this.applyPath(path, inner);
+            if (field.hasMany && grouped !== false) {
                 associatedModel = provider.getModel(field.model);
                 if (!associatedModel || !associatedModel.cached) {
                     throw new Error('Association is HasMany and there`s no cached SaphydeData Model');
@@ -87,6 +123,14 @@ QueryBuilder.prototype.createAlias = function (name) {
 
 QueryBuilder.prototype.projection = function (projection) {
 
+    var pkName = this.model.primaryKeyAttribute;
+
+    if (pkName) {
+        pkName = this.applyPath(pkName);
+        this.query.field(pkName.property, '$id');
+        this.query.group(pkName.property);
+    }
+
     this.projection = projection;
     applyProjection(this, projection.config);
 
@@ -119,6 +163,17 @@ QueryBuilder.prototype.createHandler = function (alias) {
     }
 };
 
+QueryBuilder.prototype.list = function () {
+    var builder = this,
+        query = this.query;
+    return this.Promise.all(this.globalHandlers).spread(function () {
+        return query.list().then(function (result) {
+            builder.processList(result);
+            return result;
+        });
+    });
+};
+
 QueryBuilder.prototype.exec = function () {
     var builder = this,
         query = this.query;
@@ -132,18 +187,25 @@ QueryBuilder.prototype.exec = function () {
 
 QueryBuilder.prototype.single = function () {
     var builder = this,
+        Promise = this.Promise,
         query = this.query;
     return this.Promise.all(this.globalHandlers).spread(function () {
         return query.single().then(function (result) {
-            builder.processItem(result);
-            return result;
+            var promises = [];
+            _.forEach(builder.postProcesses, function (postProcessor) {
+                promises.push(postProcessor(result));
+            });
+
+            return Promise.all(promises).spread(function () {
+                builder.processItem(result);
+                return result;
+            });
         });
     });
 };
 
 QueryBuilder.prototype.processList = function (list) {
     _.forEach(list, function (item) {
-        console.log(item);
         this.processItem(item);
     }, this);
 };
@@ -160,25 +222,7 @@ QueryBuilder.prototype.processItem = function (item) {
 };
 
 QueryBuilder.prototype.sort = function (sort) {
-
-    sort = sort.config;
-    _.forEach(sort, function (config, path) {
-        var field;
-
-        if (_.isObject(config)) {
-            if (config.raw) {
-                this.query.order(path, config.direction === 'ASC');
-            } else {
-                field = this.applyPath(path);
-                this.query.order(field.property, config.direction === 'ASC');
-            }
-        } else {
-            field = this.applyPath(path);
-            this.query.order(field.property, config === 'ASC');
-        }
-
-    }, this);
-
+    applySort(this, sort.config);
     return this;
 };
 
