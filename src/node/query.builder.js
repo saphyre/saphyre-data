@@ -62,15 +62,17 @@ function applyProjection(builder, projection, preffix, grouped, inner) {
 
             if (alias.list && alias.projection) {
                 this.postProcesses.push(function (item) {
-                    var queryBuilder = new QueryBuilder(builder.model, builder.provider);
-                    applyProjection(queryBuilder, alias.projection, path, false, true);
-                    if (alias.sort) {
-                        applySort(queryBuilder, alias.sort, path);
+                    if (item != null) {
+                        var queryBuilder = new QueryBuilder(builder.model, builder.provider);
+                        applyProjection(queryBuilder, alias.projection, path, false, true);
+                        if (alias.sort) {
+                            applySort(queryBuilder, alias.sort, path);
+                        }
+                        Criteria.prototype.OPERATOR.EQUAL(queryBuilder, item.$id, pkName);
+                        return queryBuilder.list().then(function (list) {
+                            item[alias.list] = list;
+                        });
                     }
-                    Criteria.prototype.OPERATOR.EQUAL(queryBuilder, item.$id, pkName);
-                    return queryBuilder.list().then(function (list) {
-                        item[alias.list] = list;
-                    });
                 });
             } else {
                 field = this.applyPath(path, alias.joinType == 'inner');
