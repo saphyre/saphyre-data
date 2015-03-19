@@ -12,6 +12,11 @@ function QueryBuilder(model, provider) {
     this.query = new Query(model.sequelize, model.sequelize.Promise);
 
     this.query.from(model.options.tableName, this.center);
+
+    if (model.options.paranoid) {
+        this.query.where(this.center + '.' + model.options.deletedAt + ' IS NULL');
+    }
+
     this.associations = {};
     this.handlers = [];
     this.globalHandlers = [];
@@ -240,7 +245,8 @@ QueryBuilder.prototype.applyPath = function (path, joinInner) {
 
         var assoc = model.associations, // para os relacionamentos
             oldTable,
-            joinTable;
+            joinTable,
+            condition;
 
         realPath += realPath.length > 0 ? '.' + item : item;
 
@@ -261,18 +267,31 @@ QueryBuilder.prototype.applyPath = function (path, joinInner) {
                         joinTable = oldTable + '_' + result.table;
                         join.call(this.query, assoc.combinedName, joinTable,
                             oldTable + '.' + assoc.foreignKey + ' = ' + joinTable + '.' + assoc.identifier);
-                        join.call(this.query, model.options.tableName, result.table,
-                            joinTable + '.' + assoc.foreignIdentifier + ' = ' + result.table + '.' + assoc.foreignIdentifier);
+
+                        condition = joinTable + '.' + assoc.foreignIdentifier + ' = ' + result.table + '.' + assoc.foreignIdentifier;
+                        if (model.options.paranoid) {
+                            condition += ' AND ' + result.table + '.' + model.options.deletedAt + ' IS NULL';
+                        }
+                        join.call(this.query, model.options.tableName, result.table, condition);
                     } else {
-                        join.call(this.query, model.options.tableName, result.table,
-                            oldTable + '.' + assoc.source.primaryKeyAttribute + ' = ' + result.table + '.' + assoc.foreignKey);
+                        condition = oldTable + '.' + assoc.source.primaryKeyAttribute + ' = ' + result.table + '.' + assoc.foreignKey;
+                        if (model.options.paranoid) {
+                            condition += ' AND ' + result.table + '.' + model.options.deletedAt + ' IS NULL';
+                        }
+                        join.call(this.query, model.options.tableName, result.table, condition);
                     }
                 } else if (assoc.associationType === 'HasOne') {
-                    join.call(this.query, model.options.tableName, result.table,
-                        oldTable + '.' + assoc.foreignKey + ' = ' + result.table + '.' + assoc.identifier);
+                    condition = oldTable + '.' + assoc.foreignKey + ' = ' + result.table + '.' + assoc.identifier;
+                    if (model.options.paranoid) {
+                        condition += ' AND ' + result.table + '.' + model.options.deletedAt + ' IS NULL';
+                    }
+                    join.call(this.query, model.options.tableName, result.table, condition);
                 } else if (assoc.associationType === 'BelongsTo') {
-                    this.query.join(model.options.tableName, result.table,
-                        oldTable + '.' + assoc.foreignKey + ' = ' + result.table + '.' + assoc.targetIdentifier);
+                    condition = oldTable + '.' + assoc.foreignKey + ' = ' + result.table + '.' + assoc.targetIdentifier;
+                    if (model.options.paranoid) {
+                        condition += ' AND ' + result.table + '.' + model.options.deletedAt + ' IS NULL';
+                    }
+                    this.query.join(model.options.tableName, result.table, condition);
                 }
             }
 
