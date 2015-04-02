@@ -138,6 +138,35 @@ Model.prototype.requestList = function (config) {
     }
 };
 
+Model.prototype.list = function (config) {
+    var self = this,
+        Promise = this.Promise,
+        builder;
+
+    config = config || {};
+    delete config.page;
+    delete config.pageSize;
+
+    try {
+        builder = this.buildQuery(config);
+
+        if (this.cached && this.cache.timestamp && diffFromNow(this.cache.timestamp) < this.timeout) {
+            return Promise.resolve(this.cache.result);
+        }
+
+        return builder.list().then(function (list) {
+
+            if (this.cached) {
+                self.cache.timestamp = new Date();
+                self.cache.result = list;
+            }
+            return Promise.resolve(list);
+        });
+    } catch (err) {
+        return Promise.reject(err);
+    }
+};
+
 Model.prototype.single = function (config) {
     var builder = this.buildQuery(config);
     return builder.single();
