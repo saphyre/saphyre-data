@@ -92,9 +92,9 @@ function applyProjection(builder, projection, preffix, grouped, inner) {
                 if (!associatedModel || !associatedModel.cached) {
                     throw new Error('Association is HasMany and there`s no cached SaphydeData Model');
                 }
-                globalHandlers.push(associatedModel.requestList().then(function (result) {
+                globalHandlers.push(associatedModel.list().then(function (result) {
                     var map = {};
-                    _.forEach(result.list, function (item) {
+                    _.forEach(result, function (item) {
                         map[item.$id.toString()] = item;
                     });
                     handlers.push(function (item) {
