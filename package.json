@@ -1,10 +1,14 @@
 {
-  "name": "saphyre-data",
-  "version": "0.0.1",
+  "name": "@saphyre/saphyre-data",
+  "version": "1.0.0-RC1",
   "description": "Saphyre Data",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.com:saphyre/saphyre-data.git"
   },
   "keywords": [
     "saphyre",
