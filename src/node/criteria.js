@@ -6,7 +6,7 @@ function Criteria(config) {
 
 Criteria.prototype.apply = function (queryBuilder, values) {
     var config = this.config;
-    if (_.isObject(config)) {
+    if (!_.isArray(config)) {
         config = [config];
     }
 
