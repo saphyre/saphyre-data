@@ -119,7 +119,7 @@ Query.prototype.list = function () {
     var select = this.selectQuery.toString(),
         Promise = this.Promise;
 
-    return this.sequelize.query(select).then(function (selectResult) {
+    return this.sequelize.query(select).spread(function (selectResult) {
         return Promise.resolve(selectResult);
     });
 };
@@ -127,7 +127,7 @@ Query.prototype.list = function () {
 Query.prototype.single = function () {
     var select = this.selectQuery.limit(1).toString(),
         Promise = this.Promise;
-    return this.sequelize.query(select).then(function (result) {
+    return this.sequelize.query(select).spread(function (result) {
         return Promise.resolve(result[0]);
     });
 };
@@ -136,7 +136,7 @@ Query.prototype.count = function () {
     var query = 'SELECT COUNT(*) as count FROM (' + this.countQuery.toString() + ') c',
         Promise = this.Promise;
 
-    return this.sequelize.query(query).then(function (countResult) {
+    return this.sequelize.query(query).spread(function (countResult) {
         return Promise.resolve(countResult[0].count);
     });
 };
