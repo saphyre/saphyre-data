@@ -1,6 +1,6 @@
 {
   "name": "@saphyre/saphyre-data",
-  "version": "1.0.0-RC1",
+  "version": "1.0.0-RC2",
   "description": "Saphyre Data",
   "main": "index.js",
   "scripts": {
