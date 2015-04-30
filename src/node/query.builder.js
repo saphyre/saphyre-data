@@ -73,7 +73,7 @@ function applyProjection(builder, projection, preffix, grouped, inner) {
                         if (alias.sort) {
                             applySort(queryBuilder, alias.sort, path);
                         }
-                        Criteria.prototype.OPERATOR.EQUAL(queryBuilder, item.$id, pkName);
+                        queryBuilder.query.where(pkName + ' = ?', item.$id);
                         return queryBuilder.list().then(function (list) {
                             item[alias.list] = list;
                         });

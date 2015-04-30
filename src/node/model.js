@@ -46,6 +46,11 @@ Model.prototype.criteria = function (name, config) {
     return this;
 };
 
+Model.prototype.criteriaOR = function (name, config) {
+    this.criterias[name] = new Criteria(config, true);
+    return this;
+};
+
 Model.prototype.projection = function (name, config) {
     var projection = new Projection(config);
     this.projections[name] = projection;
