@@ -225,6 +225,39 @@ describe('saphyreData', function () {
         }).catch(done);
     });
 
+    it('should handle cached data in sublists, even when there`s none', function (done) {
+        var Article = mock.models.Article,
+            Author = mock.models.Author,
+            authorData = mock.data.author,
+            tagData = mock.data.tag;
+
+        mock.sequelize.sync().then(function () {
+            return Author.create({
+                name : 'the author'
+            });
+        }).then(function (author) {
+            return Article.create({
+                title : 'this is a title example',
+                content : 'this is the article content',
+                author_id : author.author_id
+            });
+        }).then(function () {
+            return authorData.single({
+                projection : 'all'
+            });
+        }).then(function (author) {
+            expect(author).to.have.property('id');
+            expect(author).to.have.property('name').equal('the author');
+            expect(author).to.have.property('articles').with.length(1);
+            expect(author.articles[0]).to.have.property('id');
+            expect(author.articles[0]).to.have.property('title').equal('this is a title example');
+            expect(author.articles[0]).to.have.property('tags').with.length(0);
+
+            delete tagData.cache;
+            done();
+        }).catch(done);
+    });
+
     it('should return no rows in sublists when there`s none', function (done) {
         var Author = mock.models.Author,
             Tag = mock.models.Tag,
