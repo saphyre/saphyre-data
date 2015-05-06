@@ -107,6 +107,34 @@ describe('Saphyre Data General Tests', function () {
         }).catch(done);
     });
 
+    it('should cache', function (done) {
+        var Tag = mock.models.Tag,
+            tagData = mock.data.tag;
+
+        expect(tagData.cache).to.not.exist;
+
+        mock.sequelize.sync().then(function () {
+            return Tag.bulkCreate([
+                { name : 'one' },
+                { name : 'another' }
+            ]);
+        }).then(function () {
+            return tagData.list();
+        }).then(function (list) {
+            expect(tagData.cache).to.exist;
+            expect(tagData.cache).to.have.property('timestamp');
+            expect(tagData.cache).to.have.property('result').to.be.equal(list);
+
+            var timestamp = tagData.cache.timestamp;
+            return tagData.list().then(function () {
+                expect(tagData.cache).to.exist;
+                expect(tagData.cache).to.have.property('timestamp').equal(timestamp);
+            });
+        }).then(function () {
+            done();
+        }).catch(done);
+    });
+
     it('should handle cached data', function (done) {
         var Article = mock.models.Article,
             Author = mock.models.Author,
@@ -232,35 +260,6 @@ describe('Saphyre Data General Tests', function () {
         // TODO verificar se as subassociações de uma associação LEFT também serão LEFT
         // TODO o que indica ser LEFT é o hasOne (belongsTo é INNER)
         done();
-    });
-
-    it('should cache', function (done) {
-        var Tag = mock.models.Tag,
-            tagData = mock.data.tag;
-
-        expect(tagData.cache).to.not.exist;
-
-        mock.sequelize.sync().then(function () {
-            return Tag.bulkCreate([
-                { name : 'one' },
-                { name : 'another' }
-            ]);
-        }).then(function () {
-            return tagData.list();
-        }).then(function (list) {
-            expect(tagData.cache).to.exist;
-            expect(tagData.cache).to.have.property('timestamp');
-            expect(tagData.cache).to.have.property('result').to.be.equal(list);
-
-            var timestamp = tagData.cache.timestamp;
-            return tagData.list().then(function () {
-                expect(tagData.cache).to.exist;
-                expect(tagData.cache).to.have.property('timestamp').equal(timestamp);
-            });
-        }).then(function () {
-            done();
-        }).catch(done);
-
     });
 
 });
