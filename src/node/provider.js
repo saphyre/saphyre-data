@@ -19,7 +19,6 @@ Provider.prototype.getModel = function (sequelizeModel) {
 };
 
 Provider.prototype.OPERATOR = Criteria.prototype.OPERATOR;
-Provider.prototype.functions = require('./functions');
 Provider.prototype.Query = Query;
 
 module.exports = Provider;

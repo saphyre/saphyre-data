@@ -1,10 +1,9 @@
 var Query = require('./query'),
-    _ = require('lodash'),
-    functions = require('./functions'),
-    Criteria = require('./criteria');
+    _ = require('lodash');
 
-function QueryBuilder(model, provider) {
+function QueryBuilder(model, provider, functions) {
     this.provider = provider;
+    this.functions = functions;
     this.count = 0;
     this.center = this.createAlias(model.name);
     this.model = model;
@@ -68,7 +67,7 @@ function applyProjection(builder, projection, preffix, grouped, inner) {
             if (alias.list && alias.projection) {
                 this.postProcesses.push(function (item) {
                     if (item != null) {
-                        var queryBuilder = new QueryBuilder(builder.model, builder.provider);
+                        var queryBuilder = new QueryBuilder(builder.model, builder.provider, builder.functions);
                         applyProjection(queryBuilder, alias.projection, path, false, true);
                         if (alias.sort) {
                             applySort(queryBuilder, alias.sort, path);
@@ -107,7 +106,8 @@ function applyProjection(builder, projection, preffix, grouped, inner) {
                         item[alias] = list;
                     });
                 }));
-                this.query.field(functions.group_concat(field.property, model), alias);
+
+                this.query.field(this.functions.group_concat(field.property, model), alias);
             } else {
                 this.query.field(field.property, alias);
             }

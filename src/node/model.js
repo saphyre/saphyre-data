@@ -5,10 +5,6 @@ var Projection = require('./projection'),
     Sort = require('./sort'),
     _ = require('lodash');
 
-var defaults = _.partialRight(_.assign, function (value, other) {
-    return value === undefined ? other : value;
-});
-
 function Model(provider, options) {
     var model;
     if (options.model) {
@@ -29,6 +25,12 @@ function Model(provider, options) {
 
     this.model = model;
     this.Promise = model.sequelize.Promise;
+
+    try {
+        this.functions = require('./functions/' + model.sequelize.options.dialect);
+    } catch (err) {
+        throw new Error('Dialect not supported');
+    }
 
     this.provider = provider;
     this.relationships = [];
@@ -68,7 +70,7 @@ Model.prototype.sort = function (name, config) {
 };
 
 Model.prototype.buildQuery = function (config) {
-    var builder = new QueryBuilder(this.model, this.provider),
+    var builder = new QueryBuilder(this.model, this.provider, this.functions),
         projection,
         criterias = this.criterias,
         sort;
@@ -161,7 +163,7 @@ Model.prototype.list = function (config) {
 
         return builder.list().then(function (list) {
 
-            if (this.cached) {
+            if (self.cached) {
                 self.cache.timestamp = new Date();
                 self.cache.result = list;
             }
