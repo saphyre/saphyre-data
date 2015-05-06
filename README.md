@@ -116,6 +116,13 @@ It's also possible to use an array of parameters
         {/* param 1 */}, 
         {/* param 2 */}
     ]);
+
+It's also possible to use an array of parameters with OR operator
+
+    model.criteriaOR('custom', [
+        {/* param 1 */},
+        {/* param 2 */}
+    ]);
     
 There's an option to pass a static value to criteria parameters:
 
