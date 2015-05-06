@@ -54,6 +54,12 @@ function applyProjection(builder, projection, preffix, grouped, inner) {
         globalHandlers = builder.globalHandlers,
         pkName = builder.model.primaryKeyAttribute;
 
+    if (pkName) {
+        var pk = builder.applyPath(pkName);
+        builder.query.field(pk.property, '$id');
+        builder.query.group(pk.property);
+    }
+
     _.forEach(projection, function (alias, path) {
         var field;
 
@@ -128,14 +134,6 @@ QueryBuilder.prototype.createAlias = function (name) {
 };
 
 QueryBuilder.prototype.projection = function (projection) {
-
-    var pkName = this.model.primaryKeyAttribute;
-
-    if (pkName) {
-        pkName = this.applyPath(pkName);
-        this.query.field(pkName.property, '$id');
-        this.query.group(pkName.property);
-    }
 
     this.projection = projection;
     applyProjection(this, projection.config);

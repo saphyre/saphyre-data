@@ -2,8 +2,7 @@ var chai   = require('chai'),
     expect = chai.expect,
     mock = require('./mocks/db.mock');
 
-describe('Saphyre Data General Tests', function () {
-
+describe('this test', function () {
     it('should have 3 models', function () {
         expect(mock.models).to.have.property('Author');
         expect(mock.models).to.have.property('Article');
@@ -17,6 +16,9 @@ describe('Saphyre Data General Tests', function () {
             done(err);
         });
     });
+});
+
+describe('saphyreData', function () {
 
     it('should return a page', function (done) {
         var Article = mock.models.Article,
@@ -217,6 +219,35 @@ describe('Saphyre Data General Tests', function () {
             expect(author.articles[0]).to.have.property('tags').with.length(2);
             expect(author.articles[0].tags[0]).to.have.property('name').equal('one');
             expect(author.articles[0].tags[1]).to.have.property('name').equal('another');
+
+            delete tagData.cache;
+            done();
+        }).catch(done);
+    });
+
+    it('should return no rows in sublists when there`s none', function (done) {
+        var Author = mock.models.Author,
+            Tag = mock.models.Tag,
+            authorData = mock.data.author,
+            tagData = mock.data.tag;
+
+        mock.sequelize.sync().then(function () {
+            return Tag.bulkCreate([
+                { name : 'one' },
+                { name : 'another' }
+            ]);
+        }).then(function () {
+            return Author.create({
+                name : 'the author'
+            });
+        }).then(function () {
+            return authorData.single({
+                projection : 'all'
+            });
+        }).then(function (author) {
+            expect(author).to.have.property('id');
+            expect(author).to.have.property('name').equal('the author');
+            expect(author).to.have.property('articles').with.length(0);
 
             delete tagData.cache;
             done();
