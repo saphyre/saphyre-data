@@ -4,7 +4,7 @@
   "description": "Saphyre Data",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha ./src/test"
   },
   "repository": {
     "type": "git",
@@ -20,5 +20,12 @@
   "dependencies": {
     "lodash": "^3.1.0",
     "squel": "^3.10.0"
+  },
+  "devDependencies": {
+    "chai": "*",
+    "mocha": "*",
+    "path": "^0.11.14",
+    "sequelize": "^2.1.0",
+    "sqlite3": "^3.0.6"
   }
 }
