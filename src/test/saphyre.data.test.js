@@ -111,7 +111,8 @@ describe('Saphyre Data General Tests', function () {
         var Article = mock.models.Article,
             Author = mock.models.Author,
             Tag = mock.models.Tag,
-            articleData = mock.data.article;
+            articleData = mock.data.article,
+            tagData = mock.data.tag;
 
         mock.sequelize.sync().then(function () {
             return Tag.bulkCreate([
@@ -144,6 +145,7 @@ describe('Saphyre Data General Tests', function () {
             expect(article.tags[0]).to.have.property('name').equal('one');
             expect(article.tags[1]).to.have.property('name').equal('another');
 
+            delete tagData.cache;
             done();
         }).catch(done);
     });
@@ -152,7 +154,8 @@ describe('Saphyre Data General Tests', function () {
         var Article = mock.models.Article,
             Author = mock.models.Author,
             Tag = mock.models.Tag,
-            authorData = mock.data.author;
+            authorData = mock.data.author,
+            tagData = mock.data.tag;
 
         mock.sequelize.sync().then(function () {
             return Tag.bulkCreate([
@@ -187,6 +190,7 @@ describe('Saphyre Data General Tests', function () {
             expect(author.articles[0].tags[0]).to.have.property('name').equal('one');
             expect(author.articles[0].tags[1]).to.have.property('name').equal('another');
 
+            delete tagData.cache;
             done();
         }).catch(done);
     });
@@ -228,6 +232,35 @@ describe('Saphyre Data General Tests', function () {
         // TODO verificar se as subassociações de uma associação LEFT também serão LEFT
         // TODO o que indica ser LEFT é o hasOne (belongsTo é INNER)
         done();
+    });
+
+    it('should cache', function (done) {
+        var Tag = mock.models.Tag,
+            tagData = mock.data.tag;
+
+        expect(tagData.cache).to.not.exist;
+
+        mock.sequelize.sync().then(function () {
+            return Tag.bulkCreate([
+                { name : 'one' },
+                { name : 'another' }
+            ]);
+        }).then(function () {
+            return tagData.list();
+        }).then(function (list) {
+            expect(tagData.cache).to.exist;
+            expect(tagData.cache).to.have.property('timestamp');
+            expect(tagData.cache).to.have.property('result').to.be.equal(list);
+
+            var timestamp = tagData.cache.timestamp;
+            return tagData.list().then(function () {
+                expect(tagData.cache).to.exist;
+                expect(tagData.cache).to.have.property('timestamp').equal(timestamp);
+            });
+        }).then(function () {
+            done();
+        }).catch(done);
+
     });
 
 });

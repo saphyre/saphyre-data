@@ -17,10 +17,6 @@ function Model(provider, options) {
     if (options.cached) {
         this.cached = true;
         this.timeout = options.timeout;
-        this.cache = {
-            timestamp : undefined,
-            result : undefined
-        };
     }
 
     this.model = model;
@@ -157,15 +153,17 @@ Model.prototype.list = function (config) {
     try {
         builder = this.buildQuery(config);
 
-        if (this.cached && this.cache.timestamp && diffFromNow(this.cache.timestamp) < this.timeout) {
+        if (this.cached && this.cache && this.cache.timestamp && diffFromNow(this.cache.timestamp) < this.timeout) {
             return Promise.resolve(this.cache.result);
         }
 
         return builder.list().then(function (list) {
 
             if (self.cached) {
-                self.cache.timestamp = new Date();
-                self.cache.result = list;
+                self.cache = {
+                    timestamp : new Date(),
+                    result : list
+                };
             }
             return Promise.resolve(list);
         });
