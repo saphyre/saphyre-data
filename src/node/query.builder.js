@@ -55,7 +55,6 @@ function applyProjection(builder, projection, preffix, grouped, inner) {
         pkName = builder.model.primaryKeyAttribute;
 
     _.forEach(projection, function (alias, path) {
-
         var field;
 
         if (preffix) {
@@ -86,11 +85,9 @@ function applyProjection(builder, projection, preffix, grouped, inner) {
 
         } else {
             field = this.applyPath(path, inner);
-            if (field.hasMany && grouped !== false) {
-                associatedModel = provider.getModel(field.model);
-                if (!associatedModel || !associatedModel.cached) {
-                    throw new Error('Association is HasMany and there`s no cached SaphydeData Model');
-                }
+            associatedModel = provider.getModel(field.model);
+            if (field.hasMany && associatedModel && associatedModel.cached) {
+
                 globalHandlers.push(associatedModel.list().then(function (result) {
                     var map = {};
                     _.forEach(result, function (item) {
@@ -108,8 +105,10 @@ function applyProjection(builder, projection, preffix, grouped, inner) {
                 }));
 
                 this.query.field(this.functions.group_concat(field.property, model), alias);
-            } else {
+            } else if (!field.hasMany || grouped === false) {
                 this.query.field(field.property, alias);
+            } else {
+                throw new Error('Association is HasMany and there`s no cached SaphydeData Model');
             }
             this.createHandler(alias);
         }
