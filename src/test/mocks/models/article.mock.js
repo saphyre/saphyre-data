@@ -24,15 +24,11 @@ module.exports = function (sequelize, DataTypes) {
                     foreignKey : 'author_id'
                 });
 
-                Article.hasMany(models.Tag, {
+                Article.belongsToMany(models.Tag, {
                     as : 'Tags',
                     through : 'ArticleTag',
-                    foreignKey : 'article_id'
-                });
-                models.Tag.hasMany(Article, {
-                    as : 'Articles',
-                    through : 'ArticleTag',
-                    foreignKey : 'tag_id'
+                    foreignKey : 'article_id',
+                    otherKey : 'tag_id'
                 });
             }
         }

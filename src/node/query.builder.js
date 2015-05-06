@@ -261,9 +261,9 @@ QueryBuilder.prototype.applyPath = function (path, joinInner) {
                 result.table = this.createAlias(assoc.as || model.name);
                 this.associations[realPath] = result.table;
 
-                if (assoc.associationType === 'HasMany') {
+                if (assoc.associationType === 'HasMany' || assoc.associationType === 'BelongsToMany') {
                     hasMany = true;
-                    if (assoc.doubleLinked) {
+                    if (assoc.doubleLinked || assoc.associationType === 'BelongsToMany') {
                         joinTable = oldTable + '_' + result.table;
                         join.call(this.query, assoc.combinedName, joinTable,
                             oldTable + '.' + assoc.foreignKey + ' = ' + joinTable + '.' + assoc.identifier);
