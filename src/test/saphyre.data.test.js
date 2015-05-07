@@ -3,9 +3,10 @@ var chai   = require('chai'),
     mock = require('./mocks/db.mock');
 
 describe('this test', function () {
-    it('should have 3 models', function () {
+    it('should have 4 models', function () {
         expect(mock.models).to.have.property('Author');
         expect(mock.models).to.have.property('Article');
+        expect(mock.models).to.have.property('ArticleInfo');
         expect(mock.models).to.have.property('Tag');
     });
 
@@ -18,7 +19,7 @@ describe('this test', function () {
     });
 });
 
-describe('saphyreData', function () {
+describe('saphyre data', function () {
 
     it('should return a page', function (done) {
         var Article = mock.models.Article,
@@ -320,10 +321,85 @@ describe('saphyreData', function () {
         }).catch(done);
     });
 
-    it('should left join subassociations', function (done) {
-        // TODO verificar se as subassociações de uma associação LEFT também serão LEFT
-        // TODO o que indica ser LEFT é o hasOne (belongsTo é INNER)
-        done();
+    it('should filter logically removed rows', function (done) {
+        var Article = mock.models.Article,
+            articleData = mock.data.article,
+            article;
+
+        mock.sequelize.sync().then(function () {
+            return Article.create({
+                title : 'this is a title example',
+                content : 'this is the article content'
+            });
+        }).then(function (newArticle) {
+            article = newArticle;
+
+            return articleData.list({
+                projection: 'list'
+            });
+        }).then(function (articles) {
+            expect(articles).with.length(1);
+            return article.destroy();
+        }).then(function () {
+            return articleData.list({
+                projection: 'list'
+            });
+        }).then(function (articles) {
+            expect(articles).with.length(0);
+            done();
+        }).catch(done);
+    });
+
+    it('should throw error on unknown properties', function (done) {
+        var articleData = mock.data.article,
+            error;
+
+        mock.sequelize.sync().then(function () {
+            return articleData.single({
+                projection : 'error'
+            });
+        }).catch(function (err) {
+            error = err;
+        }).then(function () {
+            expect(error).to.exist;
+            done();
+        });
+    });
+
+    it('should throw error on unregistered projection', function (done) {
+        var articleData = mock.data.article,
+            error;
+
+        mock.sequelize.sync().then(function () {
+            return articleData.single({
+                projection : 'no-projection'
+            });
+        }).catch(function (err) {
+            error = err;
+        }).then(function () {
+            expect(error).to.exist;
+            done();
+        });
+    });
+
+    it('should left join associations', function (done) {
+        var Article = mock.models.Article,
+            articleData = mock.data.article;
+
+        mock.sequelize.sync().then(function () {
+            return Article.create({
+                title : 'this is a title example',
+                content : 'this is the article content',
+            });
+        }).then(function () {
+            return articleData.list({
+                projection : 'with-info'
+            });
+        }).then(function (articles) {
+            expect(articles).with.length(1);
+
+            done();
+        }).catch(done);
     });
 
 });

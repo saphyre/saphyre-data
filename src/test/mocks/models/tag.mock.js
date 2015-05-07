@@ -10,10 +10,6 @@ module.exports = function (sequelize, DataTypes) {
 
         name : DataTypes.STRING
 
-    }, {
-        // FIXME não funciona quando não é configurado o tableName,
-        // FIXME mas o sequelize trata o nome da tabela pelo nome da entidade
-        tableName : 'tag'
     });
 
     return Tag;

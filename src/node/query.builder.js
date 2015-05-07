@@ -1,6 +1,10 @@
 var Query = require('./query'),
     _ = require('lodash');
 
+function getDeletedAtColumn(model) {
+    return model.options.deletedAt || 'deletedAt';
+}
+
 function QueryBuilder(model, provider, functions) {
     this.provider = provider;
     this.functions = functions;
@@ -10,10 +14,10 @@ function QueryBuilder(model, provider, functions) {
     this.Promise = model.sequelize.Promise;
     this.query = new Query(model.sequelize, model.sequelize.Promise);
 
-    this.query.from(model.options.tableName, this.center);
+    this.query.from(model.tableName, this.center);
 
     if (model.options.paranoid) {
-        this.query.where(this.center + '.' + model.options.deletedAt + ' IS NULL');
+        this.query.where(this.center + '.' + getDeletedAtColumn(model) + ' IS NULL');
     }
 
     this.associations = {};
@@ -236,8 +240,10 @@ QueryBuilder.prototype.applyPath = function (path, joinInner) {
         result = { table : this.center },
         realPath = '',
         hasMany = false,
-        join = joinInner ? this.query.join : this.query.left_join,
-        isLeftJoin = false; // indica se há uma associação com left join antes, se houver, todas os próximos joins devem ser LEFT
+        leftJoin = this.query.left_join.bind(this.query),
+        innerJoin = this.query.join.bind(this.query),
+        join = joinInner ? innerJoin : leftJoin,
+        isLeftJoin = false; // indica se há uma associação com left join antes, se houver, todos os próximos joins devem ser LEFT
 
     _.forEach(split, function (item, index) {
 
@@ -263,38 +269,38 @@ QueryBuilder.prototype.applyPath = function (path, joinInner) {
                     hasMany = true;
                     if (assoc.doubleLinked || assoc.associationType === 'BelongsToMany') {
                         joinTable = oldTable + '_' + result.table;
-                        join.call(this.query, assoc.combinedName, joinTable,
+                        leftJoin(assoc.combinedName, joinTable,
                             oldTable + '.' + assoc.foreignKey + ' = ' + joinTable + '.' + assoc.identifier);
 
                         condition = joinTable + '.' + assoc.foreignIdentifier + ' = ' + result.table + '.' + assoc.foreignIdentifier;
                         if (model.options.paranoid) {
-                            condition += ' AND ' + result.table + '.' + model.options.deletedAt + ' IS NULL';
+                            condition += ' AND ' + result.table + '.' + getDeletedAtColumn(model) + ' IS NULL';
                         }
-                        join.call(this.query, model.options.tableName, result.table, condition);
+                        leftJoin(model.tableName, result.table, condition);
                     } else {
                         condition = oldTable + '.' + assoc.source.primaryKeyAttribute + ' = ' + result.table + '.' + assoc.foreignKey;
                         if (model.options.paranoid) {
-                            condition += ' AND ' + result.table + '.' + model.options.deletedAt + ' IS NULL';
+                            condition += ' AND ' + result.table + '.' + getDeletedAtColumn(model) + ' IS NULL';
                         }
-                        join.call(this.query, model.options.tableName, result.table, condition);
+                        join(model.tableName, result.table, condition);
                     }
                 } else if (assoc.associationType === 'HasOne') {
                     condition = oldTable + '.' + assoc.foreignKey + ' = ' + result.table + '.' + assoc.identifier;
                     if (model.options.paranoid) {
-                        condition += ' AND ' + result.table + '.' + model.options.deletedAt + ' IS NULL';
+                        condition += ' AND ' + result.table + '.' + getDeletedAtColumn(model) + ' IS NULL';
                     }
-                    join.call(this.query, model.options.tableName, result.table, condition);
+                    join(model.tableName, result.table, condition);
                     isLeftJoin = !joinInner;
                 } else if (assoc.associationType === 'BelongsTo') {
                     condition = oldTable + '.' + assoc.foreignKey + ' = ' + result.table + '.' + assoc.targetIdentifier;
                     if (model.options.paranoid) {
-                        condition += ' AND ' + result.table + '.' + model.options.deletedAt + ' IS NULL';
+                        condition += ' AND ' + result.table + '.' + getDeletedAtColumn(model) + ' IS NULL';
                     }
 
                     if (isLeftJoin) {
-                        this.query.join(model.options.tableName, result.table, condition);
+                        innerJoin(model.tableName, result.table, condition);
                     } else {
-                        this.query.left_join(model.options.tableName, result.table, condition);
+                        leftJoin(model.tableName, result.table, condition);
                     }
 
                 }

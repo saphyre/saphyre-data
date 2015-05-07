@@ -1,27 +1,26 @@
 module.exports = function (sequelize, DataTypes) {
 
-    var Author = sequelize.define('Author', {
+    var ArticleInfo = sequelize.define('ArticleInfo', {
 
-        author_id : {
+        article_info_id : {
             type : DataTypes.BIGINT,
             primaryKey : true,
             autoIncrement : true
         },
 
-        name : DataTypes.STRING
+        status : DataTypes.INTEGER
 
     }, {
-        tableName : 'table_author', // custom table name
 
         classMethods: {
             associate: function (models) {
-                Author.hasMany(models.Article, {
-                    as : 'Articles',
+                ArticleInfo.belongsTo(models.Author, {
+                    as : 'Owner',
                     foreignKey : 'author_id'
                 });
             }
         }
     });
 
-    return Author;
+    return ArticleInfo;
 };

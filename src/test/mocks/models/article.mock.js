@@ -13,9 +13,8 @@ module.exports = function (sequelize, DataTypes) {
         date : DataTypes.DATE
 
     }, {
-        // FIXME não funciona quando não é configurado o tableName,
-        // FIXME mas o sequelize trata o nome da tabela pelo nome da entidade
-        tableName : 'article',
+
+        paranoid : true,
 
         classMethods: {
             associate: function (models) {
@@ -29,6 +28,11 @@ module.exports = function (sequelize, DataTypes) {
                     through : 'ArticleTag',
                     foreignKey : 'article_id',
                     otherKey : 'tag_id'
+                });
+
+                Article.hasOne(models.ArticleInfo, {
+                    as : 'Info',
+                    foreignKey : 'article_id'
                 });
             }
         }

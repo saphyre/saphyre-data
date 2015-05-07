@@ -21,9 +21,11 @@ sequelize = new Sequelize('test', null, null, {
 models.Author = sequelize.import(path.join(__dirname, 'models/author.mock'));
 models.Article = sequelize.import(path.join(__dirname, 'models/article.mock'));
 models.Tag = sequelize.import(path.join(__dirname, 'models/tag.mock'));
+models.ArticleInfo = sequelize.import(path.join(__dirname, 'models/article.info.mock'));
 
 models.Author.associate(models);
 models.Article.associate(models);
+models.ArticleInfo.associate(models);
 
 module.exports = {
     sequelize : sequelize,

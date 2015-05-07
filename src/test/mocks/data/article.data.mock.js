@@ -12,12 +12,25 @@ module.exports = function (saphyreData, models) {
         'Tags' : 'tags'
     });
 
+    model.projection('with-info', {
+        'article_id' : 'id',
+        'title' : 'title',
+        'Author.author_id' : 'author.id',
+        'Author.name' : 'author.name',
+        'Info.status' : 'info.status',
+        'Info.Owner.name' : 'info.owner.name'
+    });
+
     model.projection('list', {
         'article_id' : 'id',
         'title' : 'title',
         'date' : 'date'
     }).use(function (article) {
         article.title = article.title.toUpperCase();
+    });
+
+    model.projection('error', {
+        'unknown_property' : 'unknown'
     });
 
     model.criteria('id', {
