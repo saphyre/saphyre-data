@@ -16,6 +16,18 @@ module.exports = function (saphyreData, models) {
         }
     });
 
+    model.projection('article-tags', {
+        'author_id' : 'id',
+        'name' : 'name',
+        'Articles.Tags' : {
+            list : 'articleTags',
+            projection : {
+                'tag_id' : 'id',
+                'name' : 'name'
+            }
+        }
+    });
+
     model.projection('list', {
         'author_id' : 'id',
         'name' : 'name'

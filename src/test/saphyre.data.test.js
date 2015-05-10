@@ -273,6 +273,62 @@ describe('saphyre data', function () {
         }).catch(done);
     });
 
+    it('should handle lists in sublists', function (done) {
+        var Article = mock.models.Article,
+            Author = mock.models.Author,
+            Tag = mock.models.Tag,
+            authorData = mock.data.author,
+            tagData = mock.data.tag,
+            author_id;
+
+        mock.sequelize.sync().then(function () {
+            return Tag.bulkCreate([
+                { name : 'one' },
+                { name : 'another' }
+            ]);
+        }).then(function () {
+            return Author.create({
+                name : 'the author'
+            });
+        }).then(function (author) {
+            author_id = author.author_id;
+
+            return Article.create({
+                title : 'this is a title example',
+                content : 'this is the article content',
+                author_id : author_id
+            });
+        }).then(function (article) {
+            return Tag.findAll().then(function (tags) {
+                return article.setTags(tags);
+            });
+        }).then(function () {
+            return Article.create({
+                title : 'this is another title example',
+                content : 'this is the article content',
+                author_id : author_id
+            });
+        }).then(function (article) {
+            return Tag.findAll().then(function (tags) {
+                return article.setTags(tags);
+            });
+        }).then(function () {
+            return authorData.single({
+                projection : 'article-tags'
+            });
+        }).then(function (author) {
+            expect(author).to.have.property('id');
+            expect(author).to.have.property('name').equal('the author');
+            expect(author).to.have.property('articleTags').with.length(2);
+            expect(author.articleTags[0]).to.have.property('id');
+            expect(author.articleTags[0]).to.have.property('name').equal('one');
+            expect(author.articleTags[1]).to.have.property('name').equal('another');
+
+            delete tagData.cache;
+            done();
+        }).catch(done);
+    });
+
     it('should return no rows in sublists when there`s none', function (done) {
         var Author = mock.models.Author,
             Tag = mock.models.Tag,
