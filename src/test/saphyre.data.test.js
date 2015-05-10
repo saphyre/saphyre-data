@@ -21,15 +21,24 @@ describe('this test', function () {
 
 describe('saphyre data', function () {
 
+    beforeEach(function (done) {
+        mock.sequelize.sync().then(function () {
+            done();
+        }).catch(done);
+    });
+
+    afterEach(function () {
+        var tagData = mock.data.tag;
+        delete tagData.cache;
+    });
+
     it('should return a page', function (done) {
         var Article = mock.models.Article,
             articleData = mock.data.article;
 
-        mock.sequelize.sync().then(function () {
-            return Article.create({
-                title : 'this is a title example',
-                content : 'this is the article content'
-            });
+        return Article.create({
+            title : 'this is a title example',
+            content : 'this is the article content'
         }).then(function () {
             return articleData.requestList({
                 projection : 'list',
@@ -72,11 +81,9 @@ describe('saphyre data', function () {
         var Article = mock.models.Article,
             articleData = mock.data.article;
 
-        mock.sequelize.sync().then(function () {
-            return Article.create({
-                title : 'this is a title example',
-                content : 'this is the article content'
-            });
+        return Article.create({
+            title : 'this is a title example',
+            content : 'this is the article content'
         }).then(function () {
             return articleData.single({
                 projection : 'list'
@@ -94,11 +101,9 @@ describe('saphyre data', function () {
         var Article = mock.models.Article,
             articleData = mock.data.article;
 
-        mock.sequelize.sync().then(function () {
-            return Article.create({
-                title : 'this is a title example',
-                content : 'this is the article content'
-            });
+        return Article.create({
+            title : 'this is a title example',
+            content : 'this is the article content'
         }).then(function () {
             return articleData.list({
                 projection : 'list'
@@ -116,12 +121,10 @@ describe('saphyre data', function () {
 
         expect(tagData.cache).to.not.exist;
 
-        mock.sequelize.sync().then(function () {
-            return Tag.bulkCreate([
-                { name : 'one' },
-                { name : 'another' }
-            ]);
-        }).then(function () {
+        return Tag.bulkCreate([
+            { name : 'one' },
+            { name : 'another' }
+        ]).then(function () {
             return tagData.list();
         }).then(function (list) {
             expect(tagData.cache).to.exist;
@@ -142,15 +145,12 @@ describe('saphyre data', function () {
         var Article = mock.models.Article,
             Author = mock.models.Author,
             Tag = mock.models.Tag,
-            articleData = mock.data.article,
-            tagData = mock.data.tag;
+            articleData = mock.data.article;
 
-        mock.sequelize.sync().then(function () {
-            return Tag.bulkCreate([
-                { name : 'one' },
-                { name : 'another' }
-            ]);
-        }).then(function () {
+        return Tag.bulkCreate([
+            { name : 'one' },
+            { name : 'another' }
+        ]).then(function () {
             return Author.create({
                 name : 'the author'
             });
@@ -176,7 +176,6 @@ describe('saphyre data', function () {
             expect(article.tags[0]).to.have.property('name').equal('one');
             expect(article.tags[1]).to.have.property('name').equal('another');
 
-            delete tagData.cache;
             done();
         }).catch(done);
     });
@@ -185,15 +184,12 @@ describe('saphyre data', function () {
         var Article = mock.models.Article,
             Author = mock.models.Author,
             Tag = mock.models.Tag,
-            authorData = mock.data.author,
-            tagData = mock.data.tag;
+            authorData = mock.data.author;
 
-        mock.sequelize.sync().then(function () {
-            return Tag.bulkCreate([
-                { name : 'one' },
-                { name : 'another' }
-            ]);
-        }).then(function () {
+        return Tag.bulkCreate([
+            { name : 'one' },
+            { name : 'another' }
+        ]).then(function () {
             return Author.create({
                 name : 'the author'
             });
@@ -235,7 +231,6 @@ describe('saphyre data', function () {
             expect(author.articles[1]).to.have.property('title').equal('this is another title example');
             expect(author.articles[1]).to.have.property('tags').with.length(0);
 
-            delete tagData.cache;
             done();
         }).catch(done);
     });
@@ -243,13 +238,10 @@ describe('saphyre data', function () {
     it('should handle cached data in sublists, even when there`s none', function (done) {
         var Article = mock.models.Article,
             Author = mock.models.Author,
-            authorData = mock.data.author,
-            tagData = mock.data.tag;
+            authorData = mock.data.author;
 
-        mock.sequelize.sync().then(function () {
-            return Author.create({
-                name : 'the author'
-            });
+        return Author.create({
+            name : 'the author'
         }).then(function (author) {
             return Article.create({
                 title : 'this is a title example',
@@ -268,7 +260,6 @@ describe('saphyre data', function () {
             expect(author.articles[0]).to.have.property('title').equal('this is a title example');
             expect(author.articles[0]).to.have.property('tags').with.length(0);
 
-            delete tagData.cache;
             done();
         }).catch(done);
     });
@@ -278,15 +269,12 @@ describe('saphyre data', function () {
             Author = mock.models.Author,
             Tag = mock.models.Tag,
             authorData = mock.data.author,
-            tagData = mock.data.tag,
             author_id;
 
-        mock.sequelize.sync().then(function () {
-            return Tag.bulkCreate([
-                { name : 'one' },
-                { name : 'another' }
-            ]);
-        }).then(function () {
+        return Tag.bulkCreate([
+            { name : 'one' },
+            { name : 'another' }
+        ]).then(function () {
             return Author.create({
                 name : 'the author'
             });
@@ -324,7 +312,6 @@ describe('saphyre data', function () {
             expect(author.articleTags[0]).to.have.property('name').equal('one');
             expect(author.articleTags[1]).to.have.property('name').equal('another');
 
-            delete tagData.cache;
             done();
         }).catch(done);
     });
@@ -332,15 +319,12 @@ describe('saphyre data', function () {
     it('should return no rows in sublists when there`s none', function (done) {
         var Author = mock.models.Author,
             Tag = mock.models.Tag,
-            authorData = mock.data.author,
-            tagData = mock.data.tag;
+            authorData = mock.data.author;
 
-        mock.sequelize.sync().then(function () {
-            return Tag.bulkCreate([
-                { name : 'one' },
-                { name : 'another' }
-            ]);
-        }).then(function () {
+        return Tag.bulkCreate([
+            { name : 'one' },
+            { name : 'another' }
+        ]).then(function () {
             return Author.create({
                 name : 'the author'
             });
@@ -353,7 +337,6 @@ describe('saphyre data', function () {
             expect(author).to.have.property('name').equal('the author');
             expect(author).to.have.property('articles').with.length(0);
 
-            delete tagData.cache;
             done();
         }).catch(done);
     });
@@ -362,11 +345,9 @@ describe('saphyre data', function () {
         var Article = mock.models.Article,
             articleData = mock.data.article;
 
-        mock.sequelize.sync().then(function () {
-            return Article.create({
-                title : 'this is a title example',
-                content : 'this is the article content'
-            });
+        return Article.create({
+            title : 'this is a title example',
+            content : 'this is the article content'
         }).then(function (article) {
             return articleData.single({
                 projection : 'list',
@@ -396,11 +377,9 @@ describe('saphyre data', function () {
             articleData = mock.data.article,
             article;
 
-        mock.sequelize.sync().then(function () {
-            return Article.create({
-                title : 'this is a title example',
-                content : 'this is the article content'
-            });
+        return Article.create({
+            title : 'this is a title example',
+            content : 'this is the article content'
         }).then(function (newArticle) {
             article = newArticle;
 
@@ -424,10 +403,8 @@ describe('saphyre data', function () {
         var articleData = mock.data.article,
             error;
 
-        mock.sequelize.sync().then(function () {
-            return articleData.single({
-                projection : 'error'
-            });
+        return articleData.single({
+            projection : 'error'
         }).catch(function (err) {
             error = err;
         }).then(function () {
@@ -440,10 +417,8 @@ describe('saphyre data', function () {
         var articleData = mock.data.article,
             error;
 
-        mock.sequelize.sync().then(function () {
-            return articleData.single({
-                projection : 'no-projection'
-            });
+        return articleData.single({
+            projection : 'no-projection'
         }).catch(function (err) {
             error = err;
         }).then(function () {
@@ -456,11 +431,9 @@ describe('saphyre data', function () {
         var Article = mock.models.Article,
             articleData = mock.data.article;
 
-        mock.sequelize.sync().then(function () {
-            return Article.create({
-                title : 'this is a title example',
-                content : 'this is the article content',
-            });
+        return Article.create({
+            title : 'this is a title example',
+            content : 'this is the article content',
         }).then(function () {
             return articleData.list({
                 projection : 'with-info'

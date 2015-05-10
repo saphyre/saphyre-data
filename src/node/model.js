@@ -173,8 +173,12 @@ Model.prototype.list = function (config) {
 };
 
 Model.prototype.single = function (config) {
-    var builder = this.buildQuery(config);
-    return builder.single();
+    try {
+        var builder = this.buildQuery(config);
+        return builder.single();
+    } catch (err) {
+        return Promise.reject(err);
+    }
 };
 
 Model.prototype.requestRelated = function () {
