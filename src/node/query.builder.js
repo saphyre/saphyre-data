@@ -59,7 +59,15 @@ function applyProjection(builder, projection, preffix, grouped, inner) {
         pkName = builder.model.primaryKeyAttribute;
 
     if (pkName) {
-        var pk = builder.applyPath(pkName);
+        var pk, assoc;
+
+        if (preffix) {
+            assoc = builder.model.associations[preffix];
+            pk = builder.applyPath(preffix + '.' + assoc.target.primaryKeyAttribute, inner);
+        } else {
+            pk = builder.applyPath(pkName, inner);
+        }
+
         builder.query.field(pk.property, '$id');
         builder.query.group(pk.property);
     }

@@ -198,11 +198,21 @@ describe('saphyre data', function () {
                 name : 'the author'
             });
         }).then(function (author) {
-            return Article.create({
-                title : 'this is a title example',
-                content : 'this is the article content',
-                author_id : author.author_id
-            });
+            return Article.bulkCreate([
+                {
+                    article_id : 1,
+                    title : 'this is a title example',
+                    content : 'this is the article content',
+                    author_id : author.author_id
+                },
+                {
+                    title : 'this is another title example',
+                    content : 'this is another article content',
+                    author_id : author.author_id
+                }
+            ]);
+        }).then(function () {
+            return Article.find(1);
         }).then(function (article) {
             return Tag.findAll().then(function (tags) {
                 return article.setTags(tags);
@@ -214,12 +224,16 @@ describe('saphyre data', function () {
         }).then(function (author) {
             expect(author).to.have.property('id');
             expect(author).to.have.property('name').equal('the author');
-            expect(author).to.have.property('articles').with.length(1);
+            expect(author).to.have.property('articles').with.length(2);
             expect(author.articles[0]).to.have.property('id');
             expect(author.articles[0]).to.have.property('title').equal('this is a title example');
             expect(author.articles[0]).to.have.property('tags').with.length(2);
             expect(author.articles[0].tags[0]).to.have.property('name').equal('one');
             expect(author.articles[0].tags[1]).to.have.property('name').equal('another');
+
+            expect(author.articles[1]).to.have.property('id');
+            expect(author.articles[1]).to.have.property('title').equal('this is another title example');
+            expect(author.articles[1]).to.have.property('tags').with.length(0);
 
             delete tagData.cache;
             done();
