@@ -21,6 +21,7 @@ module.exports = function (saphyreData, models) {
         'Info.Owner.name' : 'info.owner.name'
     });
 
+
     model.projection('list', {
         'article_id' : 'id',
         'title' : 'title',
