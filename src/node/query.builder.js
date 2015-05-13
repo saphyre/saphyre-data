@@ -59,7 +59,7 @@ function applyProjection(builder, projection, preffix, grouped, inner) {
         pkName = builder.model.primaryKeyAttribute;
 
     if (pkName) {
-        var pk = preffix ? builder.applyPath(preffix, inner) : builder.applyPath(pkName, inner);
+        var pk = preffix ? builder.applyPath(preffix + '.$id', inner) : builder.applyPath(pkName, inner);
         builder.query.field(pk.property, '$id');
         builder.query.group(pk.property);
     }
@@ -77,6 +77,7 @@ function applyProjection(builder, projection, preffix, grouped, inner) {
                 this.postProcesses.push(function (item) {
                     if (item != null) {
                         var queryBuilder = new QueryBuilder(builder.model, builder.provider, builder.functions);
+                        queryBuilder.applyPath(path + '.$id', true, true);
                         applyProjection(queryBuilder, alias.projection, path, false, true);
                         if (alias.sort) {
                             applySort(queryBuilder, alias.sort, path);
@@ -234,7 +235,7 @@ QueryBuilder.prototype.sort = function (sort) {
     return this;
 };
 
-QueryBuilder.prototype.applyPath = function (path, joinInner) {
+QueryBuilder.prototype.applyPath = function (path, joinInner, force) {
     var split = path.split('.'),
         model = this.model,
         result = { table : this.center },
@@ -266,16 +267,17 @@ QueryBuilder.prototype.applyPath = function (path, joinInner) {
 
                 if (assoc.associationType === 'HasMany' || assoc.associationType === 'BelongsToMany') {
                     hasMany = true;
+                    join = joinInner && force ? innerJoin : leftJoin;
                     if (assoc.doubleLinked || assoc.associationType === 'BelongsToMany') {
                         joinTable = oldTable + '_' + result.table;
-                        leftJoin(assoc.combinedName, joinTable,
+                        join(assoc.combinedName, joinTable,
                             oldTable + '.' + assoc.foreignKey + ' = ' + joinTable + '.' + assoc.identifier);
 
                         condition = joinTable + '.' + assoc.foreignIdentifier + ' = ' + result.table + '.' + assoc.foreignIdentifier;
                         if (model.options.paranoid) {
                             condition += ' AND ' + result.table + '.' + getDeletedAtColumn(model) + ' IS NULL';
                         }
-                        leftJoin(model.tableName, result.table, condition);
+                        join(model.tableName, result.table, condition);
                     } else {
                         condition = oldTable + '.' + assoc.source.primaryKeyAttribute + ' = ' + result.table + '.' + assoc.foreignKey;
                         if (model.options.paranoid) {
@@ -284,11 +286,11 @@ QueryBuilder.prototype.applyPath = function (path, joinInner) {
                         join(model.tableName, result.table, condition);
                     }
                 } else if (assoc.associationType === 'HasOne') {
+                    join = leftJoin;
                     condition = oldTable + '.' + assoc.foreignKey + ' = ' + result.table + '.' + assoc.identifier;
                     if (model.options.paranoid) {
                         condition += ' AND ' + result.table + '.' + getDeletedAtColumn(model) + ' IS NULL';
                     }
-                    join = leftJoin;
                     join(model.tableName, result.table, condition);
                 } else if (assoc.associationType === 'BelongsTo') {
                     condition = oldTable + '.' + assoc.foreignKey + ' = ' + result.table + '.' + assoc.targetIdentifier;
@@ -307,6 +309,9 @@ QueryBuilder.prototype.applyPath = function (path, joinInner) {
             }
 
         } else {
+            if (item == '$id') {
+                item = model.primaryKeyAttribute;
+            }
             if (index + 1 < split.length) {
                 throw new Error('Association `' + item + '` not found on ' + model.name);
             }

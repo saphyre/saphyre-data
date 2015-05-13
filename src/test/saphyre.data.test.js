@@ -341,6 +341,30 @@ describe('saphyre data', function () {
         }).catch(done);
     });
 
+    it('should return no rows in sublists when there`s none, on belongsToMany assoc', function (done) {
+        var Author = mock.models.Author,
+            Article = mock.models.Article,
+            articleData = mock.data.article;
+
+        return Author.create({ name : 'the author' }).then(function (author) {
+            return Article.create({
+                title : 'this is a title example',
+                content : 'this is the article content',
+                author_id : author.author_id
+            });
+        }).then(function () {
+            return articleData.single({
+                projection : 'tags-no-cache'
+            });
+        }).then(function (article) {
+            expect(article).to.have.property('id');
+            expect(article).to.have.property('title').equal('this is a title example');
+            expect(article).to.have.property('tags').with.length(0);
+
+            done();
+        }).catch(done);
+    });
+
     it('should filter data using criterias', function (done) {
         var Article = mock.models.Article,
             articleData = mock.data.article;

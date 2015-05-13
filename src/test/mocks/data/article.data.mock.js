@@ -21,6 +21,17 @@ module.exports = function (saphyreData, models) {
         'Info.Owner.name' : 'info.owner.name'
     });
 
+    model.projection('tags-no-cache', {
+        'article_id' : 'id',
+        'title' : 'title',
+        'Tags' : {
+            list : 'tags',
+            projection : {
+                'tag_id' : 'id',
+                'name' : 'name'
+            }
+        }
+    });
 
     model.projection('list', {
         'article_id' : 'id',
