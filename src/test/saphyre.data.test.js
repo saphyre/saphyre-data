@@ -433,7 +433,7 @@ describe('saphyre data', function () {
 
         return Article.create({
             title : 'this is a title example',
-            content : 'this is the article content',
+            content : 'this is the article content'
         }).then(function () {
             return articleData.list({
                 projection : 'with-info'

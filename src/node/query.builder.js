@@ -242,8 +242,7 @@ QueryBuilder.prototype.applyPath = function (path, joinInner) {
         hasMany = false,
         leftJoin = this.query.left_join.bind(this.query),
         innerJoin = this.query.join.bind(this.query),
-        join = joinInner ? innerJoin : leftJoin,
-        isLeftJoin = false; // indica se há uma associação com left join antes, se houver, todos os próximos joins devem ser LEFT
+        join = joinInner ? innerJoin : leftJoin;
 
     _.forEach(split, function (item, index) {
 
@@ -289,20 +288,15 @@ QueryBuilder.prototype.applyPath = function (path, joinInner) {
                     if (model.options.paranoid) {
                         condition += ' AND ' + result.table + '.' + getDeletedAtColumn(model) + ' IS NULL';
                     }
+                    join = leftJoin;
                     join(model.tableName, result.table, condition);
-                    isLeftJoin = !joinInner;
                 } else if (assoc.associationType === 'BelongsTo') {
                     condition = oldTable + '.' + assoc.foreignKey + ' = ' + result.table + '.' + assoc.targetIdentifier;
                     if (model.options.paranoid) {
                         condition += ' AND ' + result.table + '.' + getDeletedAtColumn(model) + ' IS NULL';
                     }
 
-                    if (isLeftJoin) {
-                        innerJoin(model.tableName, result.table, condition);
-                    } else {
-                        leftJoin(model.tableName, result.table, condition);
-                    }
-
+                    join(model.tableName, result.table, condition);
                 }
             }
 
