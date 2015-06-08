@@ -51,6 +51,18 @@ module.exports = function (saphyreData, models) {
         operator : saphyreData.OPERATOR.EQUAL
     });
 
+    model.criteria('without-content', {
+        name : 'content',
+        property : 'content',
+        operator : saphyreData.OPERATOR.IS_NULL
+    });
+
+    model.criteria('with-content', {
+        name : 'content',
+        property : 'content',
+        operator : saphyreData.OPERATOR.IS_NOT_NULL
+    });
+
     return model;
 
 };

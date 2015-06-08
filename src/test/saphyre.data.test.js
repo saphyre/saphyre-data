@@ -498,4 +498,41 @@ describe('saphyre data', function () {
         }).catch(done);
     });
 
+    it('should criteria operation IS_NULL / IS_NOT_NULL', function (done) {
+        var Article = mock.models.Article,
+            articleData = mock.data.article;
+
+        return Article.bulkCreate([
+            {
+                title : 'this is a title example',
+                content : 'this is the article content'
+            },
+            {
+                title : 'this is another title example',
+                content : null
+            }
+        ]).then(function () {
+            return articleData.list({
+                projection: 'list',
+                criteria : {
+                    'with-content' : true
+                }
+            });
+        }).then(function (list) {
+            expect(list).with.length(1);
+            expect(list[0]).to.have.property('title').equal('THIS IS A TITLE EXAMPLE');
+
+            return articleData.list({
+                projection: 'list',
+                criteria : {
+                    'without-content' : true
+                }
+            });
+        }).then(function (list) {
+            expect(list).with.length(1);
+            expect(list[0]).to.have.property('title').equal('THIS IS ANOTHER TITLE EXAMPLE');
+            done();
+        }).catch(done);
+    });
+
 });
