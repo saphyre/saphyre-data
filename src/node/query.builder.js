@@ -8,7 +8,7 @@ function getDeletedAtColumn(model) {
 function QueryBuilder(model, provider, functions) {
     this.provider = provider;
     this.functions = functions;
-    this.count = 0;
+    this.aliasCount = 0;
     this.center = this.createAlias(model.name);
     this.model = model;
     this.Promise = model.sequelize.Promise;
@@ -134,8 +134,8 @@ QueryBuilder.prototype.toString = function () {
 };
 
 QueryBuilder.prototype.createAlias = function (name) {
-    this.count += 1;
-    return name + '_' + this.count;
+    this.aliasCount += 1;
+    return name + '_' + this.aliasCount;
 };
 
 QueryBuilder.prototype.projection = function (projection) {
@@ -175,7 +175,7 @@ QueryBuilder.prototype.createHandler = function (alias) {
 QueryBuilder.prototype.list = function () {
     var builder = this,
         query = this.query;
-    return this.Promise.all(this.globalHandlers).spread(function () {
+    return this.Promise.all(this.globalHandlers).then(function () {
         return query.list().then(function (result) {
             builder.processList(result);
             return result;
@@ -183,10 +183,14 @@ QueryBuilder.prototype.list = function () {
     });
 };
 
+QueryBuilder.prototype.count = function () {
+    return this.query.count();
+};
+
 QueryBuilder.prototype.exec = function () {
     var builder = this,
         query = this.query;
-    return this.Promise.all(this.globalHandlers).spread(function () {
+    return this.Promise.all(this.globalHandlers).then(function () {
         return query.exec().then(function (result) {
             builder.processList(result.list);
             return result;

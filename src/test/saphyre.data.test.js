@@ -469,4 +469,33 @@ describe('saphyre data', function () {
         }).catch(done);
     });
 
+    it('should count', function (done) {
+        var Article = mock.models.Article,
+            articleData = mock.data.article;
+
+        return Article.bulkCreate([
+            {
+                title : 'this is a title example',
+                content : 'this is the article content'
+            },
+            {
+                title : 'this is another title example',
+                content : 'this is the other article content'
+            }
+        ]).then(function () {
+            return articleData.count();
+        }).then(function (count) {
+            expect(count).to.be.equal(2);
+
+            return articleData.count({
+                criteria : {
+                    id : { id : 1 }
+                }
+            });
+        }).then(function (count) {
+            expect(count).to.be.equal(1);
+            done();
+        }).catch(done);
+    });
+
 });

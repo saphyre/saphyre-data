@@ -32,7 +32,9 @@ function Model(provider, options) {
     this.relationships = [];
     this.criterias = {};
     this.sorts = {};
-    this.projections = {};
+    this.projections = {
+        '$count' : new Projection({})
+    };
 }
 
 function diffFromNow(date) {
@@ -167,6 +169,21 @@ Model.prototype.list = function (config) {
             }
             return Promise.resolve(list);
         });
+    } catch (err) {
+        return Promise.reject(err);
+    }
+};
+
+Model.prototype.count = function (config) {
+    var Promise = this.Promise,
+        conf = { projection : '$count' };
+
+    if (config && config.criteria) {
+        conf.criteria = config.criteria;
+    }
+
+    try {
+        return this.buildQuery(conf).count();
     } catch (err) {
         return Promise.reject(err);
     }
