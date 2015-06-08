@@ -63,6 +63,18 @@ module.exports = function (saphyreData, models) {
         operator : saphyreData.OPERATOR.IS_NOT_NULL
     });
 
+    model.criteria('ids', {
+        name : 'ids',
+        property : 'article_id',
+        operator : saphyreData.OPERATOR.IN
+    });
+
+    model.criteria('not-ids', {
+        name : 'not-ids',
+        property : 'article_id',
+        operator : saphyreData.OPERATOR.NOT_IN
+    });
+
     return model;
 
 };
