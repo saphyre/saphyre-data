@@ -141,6 +141,32 @@ describe('saphyre data', function () {
         }).catch(done);
     });
 
+    it('shouldn`t cache', function (done) {
+        var Tag = mock.models.Tag,
+            tagData = mock.data.tag;
+
+        expect(tagData.cache).to.not.exist;
+
+        return Tag.bulkCreate([
+            { name : 'one' },
+            { name : 'another' }
+        ]).then(function () {
+            return tagData.list({
+                cached : false
+            });
+        }).then(function () {
+            expect(tagData.cache).to.not.exist;
+
+            return tagData.requestList({
+                cached : false
+            });
+        }).then(function () {
+            expect(tagData.cache).to.not.exist;
+
+            done();
+        }).catch(done);
+    });
+
     it('should handle cached data', function (done) {
         var Article = mock.models.Article,
             Author = mock.models.Author,

@@ -124,17 +124,22 @@ Model.prototype.requestList = function (config) {
         builder = this.buildQuery(config);
 
         config = config || {};
-        isCached = !config.page && !config.pageSize && this.cached;
+        isCached = !config.page && !config.pageSize && this.cached && config.cached !== false;
 
-        if (isCached && this.cache.timestamp && diffFromNow(this.cache.timestamp) < this.timeout) {
-            return Promise.resolve(this.cache.result);
+        if (isCached && this.cache && this.cache.timestamp && diffFromNow(this.cache.timestamp) < this.timeout) {
+            return Promise.resolve({
+                list : this.cache.result,
+                count : this.cache.result.length
+            });
         }
 
         return builder.exec().then(function (result) {
 
             if (isCached) {
-                self.cache.timestamp = new Date();
-                self.cache.result = result;
+                self.cache = {
+                    timestamp : new Date(),
+                    result : result.list
+                };
             }
             return Promise.resolve(result);
         });
@@ -146,22 +151,25 @@ Model.prototype.requestList = function (config) {
 Model.prototype.list = function (config) {
     var self = this,
         Promise = this.Promise,
-        builder;
+        builder,
+        cached;
 
     config = config || {};
     delete config.page;
     delete config.pageSize;
 
+    cached = config.cached !== false && this.cached;
+
     try {
         builder = this.buildQuery(config);
 
-        if (this.cached && this.cache && this.cache.timestamp && diffFromNow(this.cache.timestamp) < this.timeout) {
+        if (cached && this.cache && this.cache.timestamp && diffFromNow(this.cache.timestamp) < this.timeout) {
             return Promise.resolve(this.cache.result);
         }
 
         return builder.list().then(function (list) {
 
-            if (self.cached) {
+            if (cached) {
                 self.cache = {
                     timestamp : new Date(),
                     result : list
