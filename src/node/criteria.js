@@ -38,15 +38,25 @@ Criteria.prototype.apply = function (queryBuilder, values) {
 
 };
 
-function isNull (expression, property) {
+function escapeString(value) {
+    // TODO there's a bug in squel allowing sql injection
+    // https://github.com/hiddentao/squel/issues/168
+    if (typeof value == 'string') {
+        return value.replace(/'/g, "''");
+    }
+    return value;
+}
+
+function isNull(expression, property) {
     expression(property + ' IS NULL ');
 }
 
-function isNotNull (expression, property) {
+function isNotNull(expression, property) {
     expression(property + ' IS NOT NULL ');
 }
 
 function equal(expression, property, value) {
+    value = escapeString(value);
     expression(property + ' = ?', value);
 }
 
@@ -71,16 +81,19 @@ function greaterThan(expression, property, value) {
 }
 
 function like(expression, property, value) {
+    value = escapeString(value);
     value = '%' + value.replace(/(%)|(_)|(\*)/g, '*$1$2$3').replace(/\*{2}/g, '%') + '%';
     expression(property + " LIKE ? ESCAPE '*'", value);
 }
 
 function ilike(expression, property, value) {
+    value = escapeString(value);
     value = '%' + value.toUpperCase().replace(/(%)|(_)|(\*)/g, '*$1$2$3').replace(/\*{2}/g, '%') + '%';
     expression("UPPER(" + property + ") LIKE ? ESCAPE '*'", value);
 }
 
 function ilikeStart(expression, property, value) {
+    value = escapeString(value);
     value = value.toUpperCase().replace(/(%)|(_)|(\*)/g, '*$1$2$3').replace(/\*{2}/g, '%') + '%';
     expression("UPPER(" + property + ") LIKE ? ESCAPE '*'", value);
 }
