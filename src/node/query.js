@@ -116,28 +116,33 @@ Query.prototype.page = function (page, size) {
 };
 
 Query.prototype.list = function () {
-    var select = this.selectQuery.toString(),
-        Promise = this.Promise;
+    var select = this.selectQuery.toParam();
 
-    return this.sequelize.query(select).spread(function (selectResult) {
-        return Promise.resolve(selectResult);
+    return this.sequelize.query(select.text, {
+        replacements : select.values
+    }).spread(function (selectResult) {
+        return selectResult;
     });
 };
 
 Query.prototype.single = function () {
-    var select = this.selectQuery.limit(1).toString(),
-        Promise = this.Promise;
-    return this.sequelize.query(select).spread(function (result) {
-        return Promise.resolve(result[0]);
+    var select = this.selectQuery.limit(1).toParam();
+
+    return this.sequelize.query(select.text, {
+        replacements : select.values
+    }).spread(function (result) {
+        return result[0];
     });
 };
 
 Query.prototype.count = function () {
-    var query = 'SELECT COUNT(*) as count FROM (' + this.countQuery.toString() + ') c',
-        Promise = this.Promise;
+    var select = this.countQuery.toParam(),
+        query = 'SELECT COUNT(*) as count FROM (' + select.text + ') c';
 
-    return this.sequelize.query(query).spread(function (countResult) {
-        return Promise.resolve(countResult[0].count);
+    return this.sequelize.query(query, {
+        replacements : select.values
+    }).spread(function (countResult) {
+        return countResult[0].count;
     });
 };
 
