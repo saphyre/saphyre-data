@@ -1,5 +1,5 @@
 var _ = require('lodash'),
-    squel = require('squel');
+    squel = require('squel-having-block'); // TODO move back to squel
 
 function Criteria(config, or) {
     this.or = or === true;

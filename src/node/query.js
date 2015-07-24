@@ -1,4 +1,4 @@
-var squel = require('squel');
+var squel = require('squel-having-block'); // TODO move back to squel
 
 function Query(sequelize, Promise) {
     this.sequelize = sequelize;
@@ -55,6 +55,12 @@ Query.prototype.outer_join = function () {
 Query.prototype.where = function () {
     this.selectQuery.where.apply(this.selectQuery, arguments);
     this.countQuery.where.apply(this.countQuery, arguments);
+    return this;
+};
+
+Query.prototype.having = function () {
+    this.selectQuery.having.apply(this.selectQuery, arguments);
+    this.countQuery.having.apply(this.countQuery, arguments);
     return this;
 };
 

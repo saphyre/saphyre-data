@@ -1,4 +1,4 @@
-var squel = require('squel'),
+var squel = require('squel-having-block'), // TODO mode back to squel
     _ = require('lodash');
 
 squel.registerValueHandler(Array, function (array) {
