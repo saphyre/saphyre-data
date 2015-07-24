@@ -56,10 +56,11 @@ function applyProjection(builder, projection, preffix, grouped, inner) {
         handlers = builder.handlers,
         associatedModel,
         globalHandlers = builder.globalHandlers,
-        pkName = builder.model.primaryKeyAttribute;
+        pkName = builder.model.primaryKeyAttribute,
+        pk;
 
     if (pkName) {
-        var pk = preffix ? builder.applyPath(preffix + '.$id', inner) : builder.applyPath(pkName, inner);
+        pk = preffix ? builder.applyPath(preffix + '.$id', inner) : builder.applyPath(pkName, inner);
         builder.query.field(pk.property, '$id');
         builder.query.group(pk.property);
     }
@@ -78,7 +79,7 @@ function applyProjection(builder, projection, preffix, grouped, inner) {
                     if (item != null) {
                         var queryBuilder = new QueryBuilder(builder.model, builder.provider, builder.functions);
                         queryBuilder.applyPath(path + '.$id', true, true);
-                        applyProjection(queryBuilder, alias.projection, path, false, true);
+                        applyProjection(queryBuilder, alias.projection, path, true, true);
                         if (alias.sort) {
                             applySort(queryBuilder, alias.sort, path);
                         }
@@ -97,7 +98,7 @@ function applyProjection(builder, projection, preffix, grouped, inner) {
         } else {
             field = this.applyPath(path, inner);
             associatedModel = provider.getModel(field.model);
-            if (field.hasMany && associatedModel && associatedModel.cached) {
+            if (field.isPropertyAssociation && field.hasMany && associatedModel && associatedModel.cached) {
 
                 globalHandlers.push(associatedModel.list().then(function (result) {
                     var map = {};
@@ -116,7 +117,7 @@ function applyProjection(builder, projection, preffix, grouped, inner) {
                 }));
 
                 this.query.field(this.functions.group_concat(field.property, model), alias);
-            } else if (!field.hasMany || grouped === false) {
+            } else if (!field.hasMany || grouped) {
                 this.query.field(field.property, alias);
             } else {
                 throw new Error('Association is HasMany and there`s no cached SaphydeData Model');
@@ -247,11 +248,12 @@ QueryBuilder.prototype.applyPath = function (path, joinInner, force) {
         hasMany = false,
         leftJoin = this.query.left_join.bind(this.query),
         innerJoin = this.query.join.bind(this.query),
-        join = joinInner ? innerJoin : leftJoin;
+        join = joinInner ? innerJoin : leftJoin,
+        isPropertyAssociation = false;
 
     _.forEach(split, function (item, index) {
 
-        var assoc = model.associations, // para os relacionamentos
+        var assoc = model.associations,
             oldTable,
             joinTable,
             condition;
@@ -262,6 +264,11 @@ QueryBuilder.prototype.applyPath = function (path, joinInner, force) {
             assoc = assoc[item];
             model = assoc.target;
 
+            // This IF is Important to be here because the association might be already defined
+            if (assoc.associationType === 'HasMany' || assoc.associationType === 'BelongsToMany') {
+                hasMany = true;
+            }
+
             oldTable = result.table;
             if (this.associations[realPath] !== undefined) {
                 result.table = this.associations[realPath];
@@ -270,7 +277,6 @@ QueryBuilder.prototype.applyPath = function (path, joinInner, force) {
                 this.associations[realPath] = result.table;
 
                 if (assoc.associationType === 'HasMany' || assoc.associationType === 'BelongsToMany') {
-                    hasMany = true;
                     join = joinInner && force ? innerJoin : leftJoin;
                     if (assoc.doubleLinked || assoc.associationType === 'BelongsToMany') {
                         joinTable = oldTable + '_' + result.table;
@@ -306,9 +312,11 @@ QueryBuilder.prototype.applyPath = function (path, joinInner, force) {
                 }
             }
 
+            isPropertyAssociation = index + 1 === split.length;
+
             if (hasMany) {
                 result.property = model.primaryKeyAttribute;
-            } else if (index + 1 === split.length) {
+            } else if (isPropertyAssociation) {
                 throw new Error('Can`t select an entire Association');
             }
 
@@ -330,7 +338,8 @@ QueryBuilder.prototype.applyPath = function (path, joinInner, force) {
     return {
         property : result.table + '.' + result.property,
         hasMany : hasMany,
-        model : model
+        model : model,
+        isPropertyAssociation : isPropertyAssociation
     };
 };
 

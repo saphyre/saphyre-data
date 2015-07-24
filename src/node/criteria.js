@@ -9,7 +9,9 @@ function Criteria(config, or) {
 Criteria.prototype.apply = function (queryBuilder, values) {
     var config = this.config,
         expression = squel.expr(),
-        where = this.or ? expression.or : expression.and;
+        where = this.or ? expression.or : expression.and,
+        hasManyPresent = false,
+        exprParam;
 
     where = where.bind(expression);
 
@@ -22,20 +24,27 @@ Criteria.prototype.apply = function (queryBuilder, values) {
             property = item.property,
             operator = item.operator,
             vl = values[item.name],
-            path = queryBuilder.applyPath(property).property;
+            path = queryBuilder.applyPath(property);
+
+        hasManyPresent = hasManyPresent || path.hasMany;
 
         if (value !== undefined) {
             if (_.isFunction(value)) {
                 value = value();
             }
-            operator(where, path, value, queryBuilder);
+            operator(where, path.property, value, queryBuilder);
         } else {
-            operator(where, path, vl, queryBuilder);
+            operator(where, path.property, vl, queryBuilder);
         }
     });
 
-    queryBuilder.query.where(expression);
-
+    if (hasManyPresent) {
+        exprParam = expression.toParam();
+        exprParam.values.unshift(queryBuilder.functions.sum(exprParam.text) + ' > 0');
+        queryBuilder.query.having.apply(queryBuilder.query, exprParam.values);
+    } else {
+        queryBuilder.query.where(expression);
+    }
 };
 
 function isNull(expression, property) {

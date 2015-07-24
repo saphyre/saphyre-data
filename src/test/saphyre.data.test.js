@@ -606,4 +606,64 @@ describe('saphyre data', function () {
         }).catch(done);
     });
 
+    it('compared data should not affect cached HasMany results', function (done) {
+        var Article = mock.models.Article,
+            Author = mock.models.Author,
+            Tag = mock.models.Tag,
+            articleData = mock.data.article,
+            author_id;
+
+        return Tag.bulkCreate([
+            { name : 'one' },
+            { name : 'another' }
+        ]).then(function () {
+            return Author.create({
+                name : 'the author'
+            });
+        }).then(function (author) {
+            author_id = author.author_id;
+
+            return Article.create({
+                title : 'this is a title example',
+                content : 'this is the article content',
+                author_id : author_id
+            });
+        }).then(function (article) {
+            return Tag.findAll().then(function (tags) {
+                return article.setTags(tags);
+            });
+        }).then(function () {
+            return Article.create({
+                title : 'this is another title example',
+                content : 'this is the article content',
+                author_id : author_id
+            });
+        }).then(function (article) {
+            return Tag.findAll().then(function (tags) {
+                return article.setTags(tags);
+            });
+        }).then(function () {
+            return articleData.list({
+                projection : 'all',
+                criteria : {
+                    tag : { name : 'one' }
+                }
+            });
+        }).then(function (articles) {
+
+            expect(articles).with.length(2);
+
+            var article = articles[0];
+
+            expect(article).to.have.property('id');
+            expect(article).to.have.property('title').equal('this is a title example');
+            expect(article).to.have.property('author').to.have.property('name').equal('the author');
+            expect(article).to.have.property('tags').with.length(2);
+            expect(article.tags[0]).to.have.property('name').equal('one');
+            expect(article.tags[1]).to.have.property('name').equal('another');
+
+            done();
+        }).catch(done);
+    });
+
 });

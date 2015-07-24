@@ -75,6 +75,12 @@ module.exports = function (saphyreData, models) {
         operator : saphyreData.OPERATOR.NOT_IN
     });
 
+    model.criteria('tag', {
+        name : 'name',
+        property : 'Tags.name',
+        operator : saphyreData.OPERATOR.EQUAL
+    });
+
     return model;
 
 };
