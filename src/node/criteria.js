@@ -6,12 +6,14 @@ function Criteria(config, or) {
     this.config = config;
 }
 
-Criteria.prototype.apply = function (queryBuilder, values) {
+Criteria.prototype.apply = function (queryBuilder, values, options) {
     var config = this.config,
         expression = squel.expr(),
         where = this.or ? expression.or : expression.and,
         hasManyPresent = false,
         exprParam;
+
+    options = options || { grouped : false };
 
     where = where.bind(expression);
 
@@ -38,7 +40,7 @@ Criteria.prototype.apply = function (queryBuilder, values) {
         }
     });
 
-    if (hasManyPresent) {
+    if (hasManyPresent && options.grouped) {
         exprParam = expression.toParam();
         exprParam.values.unshift(queryBuilder.functions.sum(exprParam.text) + ' > 0');
         queryBuilder.query.having.apply(queryBuilder.query, exprParam.values);

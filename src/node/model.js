@@ -71,7 +71,8 @@ Model.prototype.buildQuery = function (config) {
     var builder = new QueryBuilder(this.model, this.provider, this.functions),
         projection,
         criterias = this.criterias,
-        sort;
+        sort,
+        grouped;
 
     config = config || {};
 
@@ -85,7 +86,7 @@ Model.prototype.buildQuery = function (config) {
         throw new Error('Undefined projection `' + config.projection + '`');
     }
 
-    builder.projection(projection);
+    grouped = builder.projection(projection);
 
     if (config.sort !== undefined) {
         sort = this.sorts[config.sort];
@@ -103,7 +104,7 @@ Model.prototype.buildQuery = function (config) {
             if (criteria === undefined) {
                 throw new Error('Criteria named `' + name + '` not found');
             }
-            criteria.apply(builder, values);
+            criteria.apply(builder, values, { grouped : grouped });
         });
     }
 

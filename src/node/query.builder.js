@@ -59,12 +59,6 @@ function applyProjection(builder, projection, preffix, grouped, inner) {
         pkName = builder.model.primaryKeyAttribute,
         pk;
 
-    if (pkName) {
-        pk = preffix ? builder.applyPath(preffix + '.$id', inner) : builder.applyPath(pkName, inner);
-        builder.query.field(pk.property, '$id');
-        builder.query.group(pk.property);
-    }
-
     _.forEach(projection, function (alias, path) {
         var field;
 
@@ -116,18 +110,25 @@ function applyProjection(builder, projection, preffix, grouped, inner) {
                     });
                 }));
 
+                grouped = true;
                 this.query.field(this.functions.group_concat(field.property, model), alias);
-            } else if (!field.hasMany || grouped) {
-                this.query.field(field.property, alias);
             } else {
-                throw new Error('Association is HasMany and there`s no cached SaphydeData Model');
+                this.query.field(field.property, alias);
             }
             this.createHandler(alias);
         }
 
     }, builder);
 
-    return this;
+    if (pkName) {
+        pk = preffix ? builder.applyPath(preffix + '.$id', inner) : builder.applyPath(pkName, inner);
+        builder.query.field(pk.property, '$id');
+        if (grouped) {
+            builder.query.group(pk.property);
+        }
+    }
+
+    return grouped;
 }
 
 QueryBuilder.prototype.toString = function () {
@@ -140,11 +141,8 @@ QueryBuilder.prototype.createAlias = function (name) {
 };
 
 QueryBuilder.prototype.projection = function (projection) {
-
     this.projection = projection;
-    applyProjection(this, projection.config);
-
-    return this;
+    return applyProjection(this, projection.config);
 };
 
 QueryBuilder.prototype.createHandler = function (alias) {

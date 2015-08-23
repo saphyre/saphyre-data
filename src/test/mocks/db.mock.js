@@ -15,7 +15,7 @@ sequelize = new Sequelize('test', null, null, {
     dialect : 'sqlite',
     sync : { force : true },
     syncOnAssociation : true,
-    logging : false
+    logging : process.env.DEBUG ? console.log : false
 });
 
 models.Author = sequelize.import(path.join(__dirname, 'models/author.mock'));
