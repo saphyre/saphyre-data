@@ -86,7 +86,7 @@ Model.prototype.buildQuery = function (config) {
         throw new Error('Undefined projection `' + config.projection + '`');
     }
 
-    grouped = builder.projection(projection);
+    grouped = builder.projection(projection, config.criteria);
 
     if (config.sort !== undefined) {
         sort = this.sorts[config.sort];
@@ -122,9 +122,20 @@ Model.prototype.requestList = function (config) {
         isCached;
 
     try {
+        config = config || {};
+
+        config.page = parseInt(config.page, 10);
+        config.pageSize = parseInt(config.pageSize, 10);
+
+        if (config.pageSize == undefined || isNaN(config.pageSize)) {
+            return Promise.reject(new Error('Page size must be a valid number'));
+        }
+        if (config.page == undefined || isNaN(config.page)) {
+            config.page = 1;
+        }
+
         builder = this.buildQuery(config);
 
-        config = config || {};
         isCached = !config.page && !config.pageSize && this.cached && config.cached !== false;
 
         if (isCached && this.cache && this.cache.timestamp && diffFromNow(this.cache.timestamp) < this.timeout) {

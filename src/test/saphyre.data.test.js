@@ -3,19 +3,19 @@ var chai   = require('chai'),
     mock = require('./mocks/db.mock');
 
 describe('this test', function () {
-    it('should have 4 models', function () {
+    it('should have 6 models', function () {
         expect(mock.models).to.have.property('Author');
         expect(mock.models).to.have.property('Article');
         expect(mock.models).to.have.property('ArticleInfo');
         expect(mock.models).to.have.property('Tag');
+        expect(mock.models).to.have.property('User');
+        expect(mock.models).to.have.property('ArticleViewModel');
     });
 
     it('should create sqlite instance', function (done) {
         mock.sequelize.sync().then(function () {
             done();
-        }).catch(function (err) {
-            done(err);
-        });
+        }).catch(done);
     });
 });
 
@@ -158,7 +158,8 @@ describe('saphyre data', function () {
             expect(tagData.cache).to.not.exist;
 
             return tagData.requestList({
-                cached : false
+                cached : false,
+                pageSize : 10
             });
         }).then(function () {
             expect(tagData.cache).to.not.exist;
@@ -662,6 +663,193 @@ describe('saphyre data', function () {
             expect(article.tags[0]).to.have.property('name').equal('one');
             expect(article.tags[1]).to.have.property('name').equal('another');
 
+            done();
+        }).catch(done);
+    });
+
+    it('should handle criteria inside JOIN', function (done) {
+        var Article = mock.models.Article,
+            Author = mock.models.Author,
+            articleData = mock.data.article,
+            User = mock.models.User,
+            ArticleViewModel = mock.models.ArticleViewModel,
+            author_id,
+            userId,
+            anotherUserId;
+
+        return Author.create({ name : 'the author' }).then(function (author) {
+            author_id = author.author_id;
+
+            return User.create({ name : 'a user name ' });
+        }).then(function (user) {
+            userId = user.user_id;
+
+            return User.create({ name : 'another user name ' });
+        }).then(function (user) {
+            anotherUserId = user.user_id;
+
+            return Article.create({
+                title : 'this is a title example',
+                content : 'this is the article content',
+                author_id : author_id
+            });
+        }).then(function (article) {
+            return ArticleViewModel.create({
+                user_id : userId,
+                article_id : article.article_id
+            });
+        }).then(function () {
+            return Article.create({
+                title : 'this is another title example',
+                content : 'this is the article content',
+                author_id : author_id
+            });
+        }).then(function (article) {
+            return ArticleViewModel.create({
+                user_id : anotherUserId,
+                article_id : article.article_id
+            });
+        }).then(function () {
+            return articleData.list({
+                projection : 'viewed',
+                criteria : {
+                    user : { userId : userId }
+                }
+            });
+        }).then(function (articles) {
+            expect(articles).with.length(2);
+            expect(articles[0]).to.have.property('viewed').equal(true);
+            expect(articles[1]).to.have.property('viewed').equal(false);
+
+            return articleData.list({
+                projection : 'viewed',
+                criteria : {
+                    user : { userId : anotherUserId }
+                }
+            });
+        }).then(function (articles) {
+            expect(articles).with.length(2);
+            expect(articles[0]).to.have.property('viewed').equal(false);
+            expect(articles[1]).to.have.property('viewed').equal(true);
+
+            return articleData.list({
+                projection : 'viewed',
+                criteria : {
+                    user : { userId : -1 }
+                }
+            });
+        }).then(function (articles) {
+            expect(articles).with.length(2);
+            expect(articles[0]).to.have.property('viewed').equal(false);
+            expect(articles[1]).to.have.property('viewed').equal(false);
+
+            done();
+        }).catch(done);
+    });
+
+    it('should handle criteria inside sublist', function (done) {
+        var Article = mock.models.Article,
+            Author = mock.models.Author,
+            articleData = mock.data.article,
+            User = mock.models.User,
+            ArticleViewModel = mock.models.ArticleViewModel,
+            author_id,
+            userId,
+            anotherUserId,
+            articleId;
+
+        return Author.create({ name : 'the author' }).then(function (author) {
+            author_id = author.author_id;
+
+            return User.create({ name : 'a user name ' });
+        }).then(function (user) {
+            userId = user.user_id;
+
+            return User.create({ name : 'another user name ' });
+        }).then(function (user) {
+            anotherUserId = user.user_id;
+
+            return Article.create({
+                title : 'this is a title example',
+                content : 'this is the article content',
+                author_id : author_id
+            });
+        }).then(function (article) {
+            articleId = article.article_id;
+            return ArticleViewModel.create({
+                user_id : userId,
+                article_id : article.article_id
+            });
+        }).then(function () {
+            return Article.create({
+                title : 'this is another title example',
+                content : 'this is the article content',
+                author_id : author_id
+            });
+        }).then(function (article) {
+            return ArticleViewModel.create({
+                user_id : anotherUserId,
+                article_id : article.article_id
+            });
+        }).then(function () {
+            return articleData.single({
+                projection : 'viewers',
+                criteria : {
+                    user : { userId : userId },
+                    id : { id : articleId }
+                }
+            });
+        }).then(function (article) {
+            expect(article).to.have.property('viewers').with.length(1);
+
+            return articleData.single({
+                projection : 'viewers',
+                criteria : {
+                    user : { userId : anotherUserId },
+                    id : { id : articleId }
+                }
+            });
+        }).then(function (article) {
+            expect(article).to.have.property('viewers').with.length(0);
+
+            return articleData.single({
+                projection : 'viewers',
+                criteria : {
+                    user : { userId : -1 },
+                    id : { id : articleId }
+                }
+            });
+        }).then(function (article) {
+            expect(article).to.have.property('viewers').with.length(0);
+
+            done();
+        }).catch(done);
+    });
+
+    it('should handle number format error', function (done) {
+        var Article = mock.models.Article,
+            articleData = mock.data.article;
+
+        return Article.create({
+            title : 'this is a title example',
+            content : 'this is the article content'
+        }).then(function () {
+            return articleData.requestList({
+                projection : 'list',
+                page : 'abc',
+                pageSize : 10
+            });
+        }).then(function (result) {
+            expect(result).to.have.property('count').equal(1);
+
+            return articleData.requestList({
+                projection : 'list',
+                page : 1,
+                pageSize : 'abc'
+            });
+        }).then(function () {
+            done('should fail');
+        }).catch(function () {
             done();
         }).catch(done);
     });

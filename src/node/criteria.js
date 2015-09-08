@@ -13,7 +13,12 @@ Criteria.prototype.apply = function (queryBuilder, values, options) {
         hasManyPresent = false,
         exprParam;
 
-    options = options || { grouped : false };
+    options = options || { grouped : false, prefix : '' };
+    options.prefix = options.prefix || '';
+
+    if (options.prefix) {
+        options.prefix = options.prefix + '.';
+    }
 
     where = where.bind(expression);
 
@@ -23,7 +28,7 @@ Criteria.prototype.apply = function (queryBuilder, values, options) {
 
     _.forEach(config, function (item) {
         var value = item.value,
-            property = item.property,
+            property = options.prefix + item.property,
             operator = item.operator,
             vl = values[item.name],
             path = queryBuilder.applyPath(property);

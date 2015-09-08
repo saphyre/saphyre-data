@@ -12,6 +12,45 @@ module.exports = function (saphyreData, models) {
         'Tags' : 'tags'
     });
 
+    model.projection('viewed', {
+        'article_id' : 'id',
+        'title' : 'title',
+        'content' : 'content',
+        'Author.author_id' : 'author.id',
+        'Author.name' : 'author.name',
+        'Tags' : 'tags',
+        'Views.Viewer.user_id' : {
+            alias : 'viewed',
+            criteria : {
+                criteriaName : 'user',
+                name : 'userId',
+                property : 'Views.Viewer.user_id',
+                operator : saphyreData.OPERATOR.EQUAL
+            }
+        }
+    }).use(function (article) {
+        article.viewed = article.viewed != null && article.viewed > 0;
+    });
+
+    model.projection('viewers', {
+        'article_id' : 'id',
+        'title' : 'title',
+        'content' : 'content',
+        'Views.Viewer' : {
+            list : 'viewers',
+            projection : {
+                'user_id' : 'id',
+                'name' : 'name'
+            },
+            criteria : {
+                criteriaName : 'user',
+                name : 'userId',
+                property : 'user_id',
+                operator : saphyreData.OPERATOR.EQUAL
+            }
+        }
+    });
+
     model.projection('with-info', {
         'article_id' : 'id',
         'title' : 'title',

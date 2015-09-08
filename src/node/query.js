@@ -148,7 +148,7 @@ Query.prototype.count = function () {
     return this.sequelize.query(query, {
         replacements : select.values
     }).spread(function (countResult) {
-        return countResult[0].count;
+        return parseInt(countResult[0].count, 10);
     });
 };
 
