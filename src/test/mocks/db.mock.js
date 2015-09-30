@@ -15,17 +15,20 @@ sequelize = new Sequelize('test', null, null, {
     dialect : 'sqlite',
     sync : { force : true },
     syncOnAssociation : true,
-    logging : false
+    logging : process.env.DEBUG ? console.log : false
 });
 
 models.Author = sequelize.import(path.join(__dirname, 'models/author.mock'));
 models.Article = sequelize.import(path.join(__dirname, 'models/article.mock'));
 models.Tag = sequelize.import(path.join(__dirname, 'models/tag.mock'));
 models.ArticleInfo = sequelize.import(path.join(__dirname, 'models/article.info.mock'));
+models.User = sequelize.import(path.join(__dirname, 'models/user.mock'));
+models.ArticleViewModel = sequelize.import(path.join(__dirname, 'models/article.view.mock'));
 
 models.Author.associate(models);
 models.Article.associate(models);
 models.ArticleInfo.associate(models);
+models.ArticleViewModel.associate(models);
 
 module.exports = {
     sequelize : sequelize,

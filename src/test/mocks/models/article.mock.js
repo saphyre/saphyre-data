@@ -34,6 +34,11 @@ module.exports = function (sequelize, DataTypes) {
                     as : 'Info',
                     foreignKey : 'article_id'
                 });
+
+                Article.hasMany(models.ArticleViewModel, {
+                    as : 'Views',
+                    foreignKey : 'article_id'
+                });
             }
         }
     });

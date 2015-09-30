@@ -1,6 +1,6 @@
 {
   "name": "@sergiofilhow/saphyre-data",
-  "version": "1.0.0-RC3",
+  "version": "1.0.0",
   "description": "Saphyre Data",
   "main": "index.js",
   "scripts": {
@@ -19,7 +19,7 @@
   "license": "ISC",
   "dependencies": {
     "lodash": "^3.1.0",
-    "squel": "^3.10.0"
+    "squel-having-block": "4.0.0"
   },
   "devDependencies": {
     "chai": "*",

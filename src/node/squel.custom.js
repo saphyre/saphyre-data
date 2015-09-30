@@ -1,4 +1,4 @@
-var squel = require('squel'),
+var squel = require('squel-having-block'), // TODO mode back to squel
     _ = require('lodash');
 
 squel.registerValueHandler(Array, function (array) {
@@ -10,5 +10,7 @@ squel.registerValueHandler(Array, function (array) {
 });
 
 squel.registerValueHandler(Date, function (date) {
-    return date.getFullYear() + '-' + date.getMonth() + '-' + date.getDate();
+    return date.toISOString()
+        .replace(/T/, ' ') // replace T with a space
+        .replace(/\..+/, ''); // delete the dot and everything after
 });

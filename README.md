@@ -186,6 +186,28 @@ It's possible to sort on a RAW text, like alias.
     }).then(function (theFirstItem) {
         
     });
+
+    model.list({
+        projection : 'list',
+        criteria : {
+            'non-removed' : true, // in this case, there's no value to pass
+            'author' : 1 // it's possible to use 0..N criterias
+        },
+        page : 1, // won`t be considered, no pagination will be done
+        pageSize : 20, // won`t be considered, no pagination will be done
+        sort : 'recent'
+    }).then(function (nonPaginatedList) {
+
+    });
+
+    model.count({
+        criteria : { // only criteria is considered on counts
+            'non-removed' : true, // in this case, there's no value to pass
+            'author' : 1 // it's possible to use 0..N criterias
+        },
+    }).then(function (aNumber) {
+
+    });
     
 ## Operators
 

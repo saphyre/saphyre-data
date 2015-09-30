@@ -32,7 +32,9 @@ function Model(provider, options) {
     this.relationships = [];
     this.criterias = {};
     this.sorts = {};
-    this.projections = {};
+    this.projections = {
+        '$count' : new Projection({})
+    };
 }
 
 function diffFromNow(date) {
@@ -69,7 +71,8 @@ Model.prototype.buildQuery = function (config) {
     var builder = new QueryBuilder(this.model, this.provider, this.functions),
         projection,
         criterias = this.criterias,
-        sort;
+        sort,
+        grouped;
 
     config = config || {};
 
@@ -83,7 +86,7 @@ Model.prototype.buildQuery = function (config) {
         throw new Error('Undefined projection `' + config.projection + '`');
     }
 
-    builder.projection(projection);
+    grouped = builder.projection(projection, config.criteria);
 
     if (config.sort !== undefined) {
         sort = this.sorts[config.sort];
@@ -101,7 +104,7 @@ Model.prototype.buildQuery = function (config) {
             if (criteria === undefined) {
                 throw new Error('Criteria named `' + name + '` not found');
             }
-            criteria.apply(builder, values);
+            criteria.apply(builder, values, { grouped : grouped });
         });
     }
 
@@ -119,20 +122,36 @@ Model.prototype.requestList = function (config) {
         isCached;
 
     try {
+        config = config || {};
+
+        config.page = parseInt(config.page, 10);
+        config.pageSize = parseInt(config.pageSize, 10);
+
+        if (config.pageSize == undefined || isNaN(config.pageSize)) {
+            return Promise.reject(new Error('Page size must be a valid number'));
+        }
+        if (config.page == undefined || isNaN(config.page)) {
+            config.page = 1;
+        }
+
         builder = this.buildQuery(config);
 
-        config = config || {};
-        isCached = !config.page && !config.pageSize && this.cached;
+        isCached = !config.page && !config.pageSize && this.cached && config.cached !== false;
 
-        if (isCached && this.cache.timestamp && diffFromNow(this.cache.timestamp) < this.timeout) {
-            return Promise.resolve(this.cache.result);
+        if (isCached && this.cache && this.cache.timestamp && diffFromNow(this.cache.timestamp) < this.timeout) {
+            return Promise.resolve({
+                list : this.cache.result,
+                count : this.cache.result.length
+            });
         }
 
         return builder.exec().then(function (result) {
 
             if (isCached) {
-                self.cache.timestamp = new Date();
-                self.cache.result = result;
+                self.cache = {
+                    timestamp : new Date(),
+                    result : result.list
+                };
             }
             return Promise.resolve(result);
         });
@@ -144,22 +163,25 @@ Model.prototype.requestList = function (config) {
 Model.prototype.list = function (config) {
     var self = this,
         Promise = this.Promise,
-        builder;
+        builder,
+        cached;
 
     config = config || {};
     delete config.page;
     delete config.pageSize;
 
+    cached = config.cached !== false && this.cached;
+
     try {
         builder = this.buildQuery(config);
 
-        if (this.cached && this.cache && this.cache.timestamp && diffFromNow(this.cache.timestamp) < this.timeout) {
+        if (cached && this.cache && this.cache.timestamp && diffFromNow(this.cache.timestamp) < this.timeout) {
             return Promise.resolve(this.cache.result);
         }
 
         return builder.list().then(function (list) {
 
-            if (self.cached) {
+            if (cached) {
                 self.cache = {
                     timestamp : new Date(),
                     result : list
@@ -167,6 +189,21 @@ Model.prototype.list = function (config) {
             }
             return Promise.resolve(list);
         });
+    } catch (err) {
+        return Promise.reject(err);
+    }
+};
+
+Model.prototype.count = function (config) {
+    var Promise = this.Promise,
+        conf = { projection : '$count' };
+
+    if (config && config.criteria) {
+        conf.criteria = config.criteria;
+    }
+
+    try {
+        return this.buildQuery(conf).count();
     } catch (err) {
         return Promise.reject(err);
     }
