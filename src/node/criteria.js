@@ -1,6 +1,14 @@
 var _ = require('lodash'),
     squel = require('squel-having-block'); // TODO move back to squel
 
+/**
+ * A model Criteria, this will be the WHERE
+ *
+ * @class
+ * @param {Object} config         An object which the KEY will be the Model property and the VALUE will be the alias
+ * @param {Boolean} [or=false]    Flag indicating if the WHERE will be composed with OR or AND
+ * @constructor
+ */
 function Criteria(config, or) {
     this.or = or === true;
     this.config = config;
@@ -122,6 +130,11 @@ function has(expression, property, values) {
     // TODO
 }
 
+/**
+ * Criteria OPERATORS
+ *
+ * @enum
+ */
 Criteria.prototype.OPERATOR = {
     NOT_EQUAL : notEqual,
     EQUAL : equal,
@@ -133,6 +146,7 @@ Criteria.prototype.OPERATOR = {
     ILIKE : ilike,
     ILIKE_START : ilikeStart,
     BETWEEN : between,
+    /** not yet implemented */
     HAS : has,
     IN : criteriaIn,
     NOT_IN : notIn,

@@ -1,10 +1,26 @@
 var Projection = require('./projection'),
     QueryBuilder = require('./query.builder'),
-    Relationship = require('./relationship'),
     Criteria = require('./criteria'),
     Sort = require('./sort'),
     _ = require('lodash');
 
+///**
+// * @typedef {Model~functions}
+// */
+
+/**
+ * This is a repository Model
+ *
+ * @typedef {Model}
+ *
+ * @param {Provider}        provider the Model Provider
+ * @param {Object}          options
+ * @param {SequelizeModel}  options.model   The sequelize model
+ * @param {Boolean}         options.cached  Flag indicating if this Repository will be cached
+ * @param {Number}          options.timeout Timeout to invalidate cache
+ *
+ * @constructor
+ */
 function Model(provider, options) {
     var model;
     if (options.model) {
@@ -23,13 +39,20 @@ function Model(provider, options) {
     this.Promise = model.sequelize.Promise;
 
     try {
+        /**
+         * Functions (agregations) available
+         * @type {Object}
+         * @property {Function} sum             To sum on the given property
+         * @property {Function} count           To count on the given property
+         * @property {Function} convert         Used only in MySQL to convert BLOB to utf8
+         * @property {Function} group_concat    Will join the results with comma
+         */
         this.functions = require('./functions/' + model.sequelize.options.dialect);
     } catch (err) {
         throw new Error('Dialect not supported');
     }
 
     this.provider = provider;
-    this.relationships = [];
     this.criterias = {};
     this.sorts = {};
     this.projections = {
@@ -41,27 +64,170 @@ function diffFromNow(date) {
     return new Date().getTime() - date.getTime();
 }
 
+/**
+ * Creates a new Criteria
+ *
+ * @param {String} name      The Criteria name
+ * @param {Object} config    The criteria config
+ *
+ * @returns {Model} this
+ *
+ * @example
+ * model.criteria('author', {
+ *     name : 'id', // this is the name of the parameter
+ *     property : 'author_id', // the property to check
+ *     operator : SaphyreData.OPERATOR.EQUAL // the operator
+ * });
+ *
+ * @example
+ * // It's also possible to use an array of parameters
+ * model.criteria('custom', [
+ *    {
+ *        name : 'id', // this is the name of the parameter
+ *        property : 'author_id', // the property to check
+ *        operator : SaphyreData.OPERATOR.EQUAL // the operator
+ *    },
+ *    {
+ *        name : 'id', // this is the name of the parameter
+ *        property : 'author_id', // the property to check
+ *        operator : SaphyreData.OPERATOR.EQUAL // the operator
+ *    }
+ * ]);
+ *
+ * @example
+ * // It's also possible to use an array of parameters with OR operator
+ * model.criteriaOR('custom', [
+ *    {
+ *        name : 'id', // this is the name of the parameter
+ *        property : 'author_id', // the property to check
+ *        operator : SaphyreData.OPERATOR.EQUAL // the operator
+ *    },
+ *    {
+ *        name : 'id', // this is the name of the parameter
+ *        property : 'author_id', // the property to check
+ *        operator : SaphyreData.OPERATOR.EQUAL // the operator
+ *    }
+ * ]);
+ *
+ * @example
+ * // There's an option to pass a static value to criteria parameters:
+ * model.criteria('non-removed', {
+ *     name : 'status',
+ *     property : 'status',
+ *     operator : SaphyreData.OPERATOR.EQUAL,
+ *     value : ArticleStatus.REMOVED
+ * });
+ *
+ * @example
+ * // It's also possible to use dynamic values, passing a function will evoke everytime a query is constructed.
+ * model.criteria('today', {
+ *     name : 'date',
+ *     property : 'publish_dt',
+ *     operator : SaphyreData.OPERATOR.GREATER_EQUAL,
+ *     value : function () {
+ *         return new Date();
+ *     }
+ * });
+ */
 Model.prototype.criteria = function (name, config) {
     this.criterias[name] = new Criteria(config);
     return this;
 };
 
+/**
+ * Creates a criteria which all conditions are linked with OR operator
+ *
+ * @param {String} name      The Criteria name
+ * @param {Object} config    The criteria config
+ * @returns {Model} this
+ */
 Model.prototype.criteriaOR = function (name, config) {
     this.criterias[name] = new Criteria(config, true);
     return this;
 };
 
+/**
+ * Creates a new Projection to the Model
+ *
+ * @param {String}  name      The projection name to be used later
+ * @param {Object}  config    The projection config
+ * @returns {Projection}
+ *
+ * @example
+ *  model.projection('list', {
+ *     'article_id' : 'id', // article_id as id
+ *     'created_at' : 'created_at',
+ *     'title' : 'title',
+ *
+ *     // the association Author will be automatically joined
+ *     'Author.user_id' : 'author.id',
+ *     // an object author will be created
+ *     'Author.nickname' : 'author.nickname',
+ *     // nickname will be a property of the author object recently created
+ *     'Author.slug' : 'author.slug',
+ *
+ *     // Association Category will be automatically joined
+ *     'Category.name' : 'category'
+ * }).use(function (article) {
+ *     article.author.thumbnail = '/users/thumbnail/' + article.author.id;
+ * }).use(function (article) {
+ *     console.log(article);
+ * });
+ *
+ *
+ * @example
+ * // Its possible to use functions on a projection
+ * 'Tags.tag_id' : {
+ *    alias : 'tags_count',
+ *    func : saphyreDataModel.functions.count
+ * }
+ *
+ * @example
+ * // If you want to create aditional queries (for each row), necessary in HasMany:
+ * 'Tags' : {
+ *     list : 'tags', // the name of the result list in each row
+ *     projection : {
+ *         'tag_id' : 'id',
+ *         'name' : 'name' // internally Tags.name
+ *     },
+ *     sort : { // optional
+ *         'name' : 'ASC'
+ *     }
+ * }
+ *
+ * @example
+ * // For HasMany and HasOne the QueryBuilder will LEFT JOIN the table, if you want to INNER JOIN the table:
+ * 'Tags.tag_id' : {
+ *     alias : 'tags_count',
+ *     func : saphyreDataModel.functions.count,
+ *     joinType : 'inner' // case sensitive
+ * }
+ */
 Model.prototype.projection = function (name, config) {
     var projection = new Projection(config);
     this.projections[name] = projection;
     return projection;
 };
 
-Model.prototype.relationship = function (path) {
-    this.relationships.push(new Relationship(path));
-    return this;
-};
-
+/**
+ * Create a new Sort to the Model
+ *
+ * @param {String}  name      The sort name to be used later
+ * @param {Object}  config    The sort config
+ * @returns {Model} this
+ *
+ * @example
+ * model.sort('recent', { 'publish_dt' : 'DESC' });
+ *
+ * @example
+ * // It's possible to sort on a RAW text, like alias.
+ * model.sort('recent', {
+ *     'publish_dt' : {
+ *         raw : true,
+ *         direction : 'DESC'
+ *      }
+ * });
+ */
 Model.prototype.sort = function (name, config) {
     this.sorts[name] = new Sort(config);
     return this;
@@ -115,6 +281,34 @@ Model.prototype.buildQuery = function (config) {
     return builder;
 };
 
+/**
+ * Run the query with the given config (projection, criteria and sort)
+ * This function will also run a count query to return the total elements
+ *
+ * @param {Object}  config               The query config
+ * @param {String}  config.projection    The projection name
+ * @param {String}  [config.sort]        The sort name
+ * @param {Object}  [config.criteria]    The criteria config, see example below
+ * @param {Number}  [config.page = 1]    The page to select
+ * @param {Number}  config.pageSize      The page size
+ * @param {Boolean} [config.cached]      Default to true only when the Model is configured to be cached, false to skip cache
+ * @returns Promise{Query~ExecResult}
+ *
+ * @example
+ * model.requestList({
+ *     projection : 'list',
+ *     criteria : {
+ *         'non-removed' : true, // in this case, there's no value to pass
+ *         'author' : 1 // it's possible to use 0..N criterias
+ *     },
+ *     page : 1,
+ *     pageSize : 20,
+ *     sort : 'recent'
+ * }).then(result => {
+ *     // result.list -> the list
+ *     // result.count -> the total elements
+ * });
+ */
 Model.prototype.requestList = function (config) {
     var self = this,
         Promise = this.Promise,
@@ -146,7 +340,6 @@ Model.prototype.requestList = function (config) {
         }
 
         return builder.exec().then(function (result) {
-
             if (isCached) {
                 self.cache = {
                     timestamp : new Date(),
@@ -160,6 +353,28 @@ Model.prototype.requestList = function (config) {
     }
 };
 
+/**
+ * Run the query with the given config (projection, criteria and sort)
+ *
+ * @param {Object}  config               The query config
+ * @param {String}  config.projection    The projection name
+ * @param {String}  [config.sort]        The sort name
+ * @param {Object}  [config.criteria]    The criteria config, see example below
+ * @param {Boolean} [config.cached]      Default to true only when the Model is configured to be cached, false to skip cache
+ * @returns Promise{Array}
+ *
+ * @example
+ * model.list({
+ *     projection : 'list',
+ *     criteria : {
+ *         'non-removed' : true, // in this case, there's no value to pass
+ *         'author' : 1 // it's possible to use 0..N criterias
+ *     },
+ *     sort : 'recent'
+ * }).then(list => {
+ *     // list -> the list
+ * });
+ */
 Model.prototype.list = function (config) {
     var self = this,
         Promise = this.Promise,
@@ -194,6 +409,24 @@ Model.prototype.list = function (config) {
     }
 };
 
+/**
+ * Run a count query with the given config (criteria)
+ *
+ * @param {Object}  config               The query config
+ * @param {String}  config.projection    The projection name
+ * @param {Object}  [config.criteria]    The criteria config, see example below
+ * @returns Promise{Number}
+ *
+ * @example
+ * model.list({
+ *     criteria : {
+ *         'non-removed' : true, // in this case, there's no value to pass
+ *         'author' : 1 // it's possible to use 0..N criterias
+ *     },
+ * }).then(count => {
+ *     // count -> the count
+ * });
+ */
 Model.prototype.count = function (config) {
     var Promise = this.Promise,
         conf = { projection : '$count' };
@@ -209,6 +442,29 @@ Model.prototype.count = function (config) {
     }
 };
 
+/**
+ * Run the query with the given config (projection, criteria and sort) and return the FIRST result regardless
+ * how many rows would return with the given criteria
+ *
+ * @param {Object}  config               The query config
+ * @param {String}  config.projection    The projection name
+ * @param {String}  [config.sort]        The sort name
+ * @param {Object}  [config.criteria]    The criteria config, see example below
+ * @param {Boolean} [config.cached]      Default to true only when the Model is configured to be cached, false to skip cache
+ * @returns Promise{Array}
+ *
+ * @example
+ * model.list({
+ *     projection : 'list',
+ *     criteria : {
+ *         'non-removed' : true, // in this case, there's no value to pass
+ *         'author' : 1 // it's possible to use 0..N criterias
+ *     },
+ *     sort : 'recent'
+ * }).then(theFirstItem => {
+ *
+ * });
+ */
 Model.prototype.single = function (config) {
     try {
         var builder = this.buildQuery(config);
@@ -218,8 +474,14 @@ Model.prototype.single = function (config) {
     }
 };
 
-Model.prototype.requestRelated = function () {
-    // TODO
+/**
+ * Return the {Projection} with the given name
+ *
+ * @param name
+ * @returns {Projection}
+ */
+Model.prototype.getProjection = function (name) {
+    return this.projections[name];
 };
 
 module.exports = Model;

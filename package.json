@@ -1,10 +1,11 @@
 {
   "name": "@sergiofilhow/saphyre-data",
   "version": "1.0.1",
-  "description": "Saphyre Data",
+  "description": "Module to enhance data retrieval for Sequelize",
   "main": "index.js",
   "scripts": {
-    "test": "mocha ./src/test"
+    "test": "mocha ./src/test",
+    "cover": "istanbul cover _mocha -- src/test -R spec"
   },
   "repository": {
     "type": "git",
@@ -12,8 +13,7 @@
   },
   "keywords": [
     "saphyre",
-    "data",
-    "module"
+    "sequelize"
   ],
   "author": "Sérgio Marcelino (sergiofilhow@gmail.com)",
   "license": "ISC",
@@ -23,6 +23,8 @@
   },
   "devDependencies": {
     "chai": "*",
+    "gulp": "^3.9.0",
+    "gulp-jsdoc3": "0.0.3",
     "mocha": "*",
     "path": "^0.11.14",
     "sequelize": "^2.1.0",
