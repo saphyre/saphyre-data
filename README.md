@@ -21,15 +21,6 @@ Criterias are used to indicate the filter option from the database, this option 
 
 Sorts are used to indicate the order option from the database, this option is similar to SQL ORDER BY bu you can name every sort with all fields required.
 
-### Relationship
-
-Relationships are used if you want to list associated models to each other. You have to configure the association you have.
-
-For example: We have `Article`, `Tag` and `Newsletter`.
-**Article** has some **Tags** and **Newsletter** has some **Tags**.
-
-So if we create a relationship on **Article** with **Tag** and **Newsletter** with **Tags**, We can determine **Newsletters** associated with **Article** by **Tags** or vice versa.
-
 ## API
 
 ### Projection
@@ -144,8 +135,6 @@ It's also possible to use dynamic values, passing a function will evoke everytim
         }
     });
     
-**Note:** Currently there's no option to use OR operator to join expressions
-
 ### Sort
 
     model.sort('recent', { 'publish_dt' : 'DESC' });

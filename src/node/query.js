@@ -1,5 +1,19 @@
 var squel = require('squel-having-block'); // TODO move back to squel
 
+/**
+ * @typedef Query~ExecResult
+ * @property {Array} list     The page list
+ * @property {Number} count   The total elements found with the query
+ * @property {Number} page    The current page index (1 based)
+ * @property {Number} pages   Total pages available
+ */
+
+/**
+ * @class
+ * @param {Sequelize} sequelize
+ * @param {Promise} Promise
+ * @constructor
+ */
 function Query(sequelize, Promise) {
     this.sequelize = sequelize;
     this.Promise = Promise;

@@ -32,6 +32,15 @@ describe('saphyre data', function () {
         delete tagData.cache;
     });
 
+    it('should get projection', function () {
+        var articleData = mock.data.article,
+            projection = articleData.getProjection('list');
+
+        expect(projection).to.exist;
+        expect(projection).to.have.property('config');
+        expect(projection).to.have.property('middlewares');
+    });
+
     it('should return a page', function (done) {
         var Article = mock.models.Article,
             articleData = mock.data.article;
