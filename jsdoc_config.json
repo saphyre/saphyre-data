@@ -7,7 +7,8 @@
     "excludePattern": "(^|\\/|\\\\)_"
   },
   "opts": {
-    "destination": "./docs/gen"
+    "destination": "./docs/gen",
+    "template": "./node_modules/minami"
   },
   "plugins": [
     "plugins/markdown"
@@ -18,10 +19,7 @@
     "default": {
       "outputSourceFiles": true
     },
-    "path": "ink-docstrap",
-    "theme": "cerulean",
-    "navType": "vertical",
-    "linenums": true,
+    "linenums": false,
     "dateFormat": "MMMM Do YYYY, h:mm:ss a"
   }
 }
