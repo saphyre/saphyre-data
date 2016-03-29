@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@gitlab.com:saphyre/saphyre-data.git"
+    "url": "https://github.com/saphyre/saphyre-data.git"
   },
   "keywords": [
     "saphyre",
     "sequelize"
   ],
   "author": "Sérgio Marcelino (sergiofilhow@gmail.com)",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "lodash": "^3.1.0",
     "squel-having-block": "4.0.0"
