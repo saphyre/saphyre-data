@@ -18,6 +18,7 @@
   "author": "Sérgio Marcelino (sergiofilhow@gmail.com)",
   "license": "MIT",
   "dependencies": {
+    "istanbul": "^0.4.2",
     "lodash": "^3.1.0",
     "squel-having-block": "4.0.0"
   },
