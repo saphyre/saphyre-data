@@ -29,8 +29,7 @@ Sorts are used to indicate the order option from the database, this option is si
 
     var SaphyreData = require('saphyre-data'),
         data = new SaphyreData(),
-        model = data.createModel('article', Article);
-    // Article is a Sequelize Model
+        model = data.createModel(Article); // Article is a Sequelize Model
         
     // creating a projection to be used on list
     model.projection('list', {

@@ -1,19 +1,27 @@
 language: node_js
 
 node_js:
-  - "4"
-  - "5"
+  - '4'
+  - '5'
 
 branches:
   only:
     - master
 
 before_script:
-  - "npm install"
+  - npm install
 
 script:
-  - "npm test"
-  - "npm run cover"
+  - npm test
+  - npm run cover
+
+deploy:
+  provider: npm
+  email: sergiofilhow@gmail.com
+  api_key:
+    secure: KqfPgLRmSX3pdrDqpTlCmUVsnf99uKHdkDWakQvb70ni6xErCx9/yHrSsiJ3RQOPkiNGaGk4fpKXDcp2ttX4M42Z9qsWYGGx+MhBLgQG7K2el7vGFZ1eTY86h45cnL1RB8onGTKpo7hVFwKniT/Y4etLboTf5Ovk83KwGxXyDdnmkHTkEWKf2KEHiSvefma08y8L73eT4Vrev0WyW+xXzl0+/UZ1/Y05BIsv4HGruS1I9vAECwN18PBA1y3YTZJwdehwLYGqqF3FtgWz3nCza0Gm99d+Wyiu0hECNnCMP3cJqwX/W1DtwtziTaZ3ycvxVNsDvH/G3PpHTKI9nNx0esTTNxj7ElxeSVrQDXn2skH3jI72LDrHr+nd4hp69buXGQeu2UZYGCkBAKUZbtl4+Rx1Nax/3r9YYNIQRAvoDIT3/s24+EYMqF0/6IMgwBHQgu3hqAOIsmdp1oA14gp2b2BPDqULXWEA4jDbX8WEsE5aFHdO9836zhQCk+2nOyi83m0EF/CCR+/h13h1WNqUGUPAJWt+8qyaZccnjjJQLJ4YPffcMBup/hkl3o2kCTH281cqw25QuA6GErKqYjXC11E4/yE+9GBupMcxANHY9IpBkpLxv+/2V9A0cOkTKXCRXf4QVvlhZtbxQi+iB5AgGJ85plZyQ4k5LeBrUqfwIgg=
+  on:
+    tags: true
 
 notifications:
   email:

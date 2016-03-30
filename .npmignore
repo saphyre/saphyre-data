@@ -1,0 +1,9 @@
+.gitignore
+.DS_Store
+node_modules/
+
+gulpfile.js
+jsdoc_config.json
+.travis.yml
+
+src/test/
