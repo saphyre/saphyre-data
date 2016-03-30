@@ -265,7 +265,7 @@ Model.prototype.buildQuery = function (config) {
     }
 
     if (config.criteria !== undefined) {
-        _.forEach(config.criteria, function (values, name) {
+        _.forEach(config.criteria, (values, name) => {
             var criteria = criterias[name];
             if (criteria === undefined) {
                 throw new Error('Criteria named `' + name + '` not found');
@@ -339,7 +339,7 @@ Model.prototype.requestList = function (config) {
             });
         }
 
-        return builder.exec().then(function (result) {
+        return builder.exec().then(result => {
             if (isCached) {
                 self.cache = {
                     timestamp : new Date(),
@@ -394,8 +394,7 @@ Model.prototype.list = function (config) {
             return Promise.resolve(this.cache.result);
         }
 
-        return builder.list().then(function (list) {
-
+        return builder.list().then(list => {
             if (cached) {
                 self.cache = {
                     timestamp : new Date(),

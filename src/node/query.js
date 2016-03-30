@@ -118,7 +118,7 @@ Query.prototype.exec = function () {
     return Promise.all([
         this.list(),
         this.count()
-    ]).spread(function (result, count) {
+    ]).spread((result, count) => {
         return Promise.resolve({
             list : result,
             count : count,
@@ -140,7 +140,7 @@ Query.prototype.list = function () {
 
     return this.sequelize.query(select.text, {
         replacements : select.values
-    }).spread(function (selectResult) {
+    }).spread(selectResult => {
         return selectResult;
     });
 };
@@ -150,7 +150,7 @@ Query.prototype.single = function () {
 
     return this.sequelize.query(select.text, {
         replacements : select.values
-    }).spread(function (result) {
+    }).spread(result => {
         return result[0];
     });
 };
@@ -161,7 +161,7 @@ Query.prototype.count = function () {
 
     return this.sequelize.query(query, {
         replacements : select.values
-    }).spread(function (countResult) {
+    }).spread(countResult => {
         return parseInt(countResult[0].count, 10);
     });
 };

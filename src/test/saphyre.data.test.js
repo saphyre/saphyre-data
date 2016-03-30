@@ -244,7 +244,7 @@ describe('saphyre data', function () {
                 }
             ]);
         }).then(function () {
-            return Article.find(1);
+            return Article.findById(1);
         }).then(function (article) {
             return Tag.findAll().then(function (tags) {
                 return article.setTags(tags);

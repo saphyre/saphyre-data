@@ -34,7 +34,7 @@ Criteria.prototype.apply = function (queryBuilder, values, options) {
         config = [config];
     }
 
-    _.forEach(config, function (item) {
+    _.forEach(config, item => {
         var value = item.value,
             property = options.prefix + item.property,
             operator = item.operator,
@@ -117,12 +117,18 @@ function between(expression, property, values, queryBuilder) {
 }
 
 function criteriaIn(expression, property, values) {
-    expression(property + ' IN ?', values);
+    if (values && values.length) {
+        expression(property + ' IN ?', values);
+    } else {
+        expression('0');
+    }
 }
 
 function notIn(expression, property, values) {
     if (values && values.length > 0) {
         expression(property + ' NOT IN ?', values);
+    } else {
+        expression('1');
     }
 }
 
