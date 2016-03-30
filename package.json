@@ -1,6 +1,6 @@
 {
   "name": "saphyre-data",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Module to enhance data retrieval for Sequelize",
   "main": "index.js",
   "scripts": {
@@ -12,15 +12,15 @@
     "url": "https://github.com/saphyre/saphyre-data.git"
   },
   "keywords": [
-    "saphyre",
-    "sequelize"
+    "sequelize",
+    "data retrieval",
+    "query"
   ],
   "author": "Sérgio Marcelino (sergiofilhow@gmail.com)",
   "license": "MIT",
   "dependencies": {
-    "istanbul": "^0.4.2",
     "lodash": "^3.1.0",
-    "squel-having-block": "4.0.0"
+    "squel": "^5.0.0"
   },
   "devDependencies": {
     "chai": "*",
@@ -32,6 +32,7 @@
     "mocha-lcov-reporter": "^1.2.0",
     "path": "^0.11.14",
     "sequelize": "^2.1.0",
-    "sqlite3": "^3.0.8"
+    "sqlite3": "^3.0.8",
+    "istanbul": "^0.4.2"
   }
 }

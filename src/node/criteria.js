@@ -1,5 +1,5 @@
 var _ = require('lodash'),
-    squel = require('squel-having-block'); // TODO move back to squel
+    squel = require('squel');
 
 /**
  * A model Criteria, this will be the WHERE

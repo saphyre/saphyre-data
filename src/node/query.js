@@ -1,4 +1,4 @@
-var squel = require('squel-having-block'); // TODO move back to squel
+var squel = require('squel');
 
 /**
  * @typedef Query~ExecResult

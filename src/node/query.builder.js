@@ -1,7 +1,7 @@
 var Query = require('./query'),
     Criteria = require('./criteria'),
     _ = require('lodash'),
-    squel = require('squel-having-block'),
+    squel = require('squel'),
     Sequelize = require('sequelize');
 
 function getDeletedAtColumn(model) {
