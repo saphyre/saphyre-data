@@ -11,10 +11,13 @@ if (fs.existsSync(storage)) {
     fs.unlinkSync(storage);
 }
 
-sequelize = new Sequelize('test', null, null, {
-    dialect : 'sqlite',
+sequelize = new Sequelize(process.env.DBNAME, process.env.USER, process.env.PASS, {
+    dialect : process.env.DIALECT || 'sqlite',
     sync : { force : true },
+    dialectOptions : { socketPath : process.env.SOCKET },
     syncOnAssociation : true,
+    host : process.env.DBHOST,
+    port : process.env.DBPORT,
     logging : process.env.DEBUG ? console.log : false
 });
 

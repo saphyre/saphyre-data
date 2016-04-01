@@ -27,11 +27,13 @@
     "coveralls": "^2.11.9",
     "gulp": "^3.9.0",
     "gulp-jsdoc3": "0.2.1",
+    "istanbul": "^0.4.2",
     "minami": "^1.1.1",
     "mocha": "*",
     "mocha-lcov-reporter": "^1.2.0",
+    "mysql": "^2.10.2",
+    "pg": "^4.5.2",
     "sequelize": "^3.20.0",
-    "sqlite3": "^3.0.8",
-    "istanbul": "^0.4.2"
+    "sqlite3": "^3.0.8"
   }
 }

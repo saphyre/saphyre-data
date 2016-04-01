@@ -4,12 +4,27 @@ node_js:
   - '4'
   - '5'
 
+services:
+  - postgresql
+  - mysql
+
 branches:
   only:
     - master
 
+env:
+  - DIALECT=sqlite
+  - DIALECT=postgres DBNAME=test DBHOST=127.0.0.1 DBPORT=5432
+  - DIALECT=mysql DBNAME=test DBHOST=127.0.0.1 DBPORT=3306
+
+cache:
+  directories:
+    - node_modules
+
 before_script:
   - npm install
+  - "mysql -e 'create database test;'"
+  - "psql -c 'create database test;' -U postgres"
 
 script:
   - npm test

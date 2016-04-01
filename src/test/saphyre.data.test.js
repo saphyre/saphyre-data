@@ -12,7 +12,7 @@ describe('this test', function () {
         expect(mock.models).to.have.property('ArticleViewModel');
     });
 
-    it('should create sqlite instance', function (done) {
+    it('should create sequelize instance and connect', function (done) {
         mock.sequelize.sync().then(function () {
             done();
         }).catch(done);

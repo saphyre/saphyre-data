@@ -7,3 +7,5 @@ jsdoc_config.json
 .travis.yml
 
 src/test/
+coverage/
+docs/
