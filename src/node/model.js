@@ -1,5 +1,6 @@
 var Projection = require('./projection'),
     QueryBuilder = require('./query.builder'),
+    squelFactory = require('./squel.factory'),
     Criteria = require('./criteria'),
     Sort = require('./sort'),
     _ = require('lodash');
@@ -37,6 +38,7 @@ function Model(provider, options) {
 
     this.model = model;
     this.Promise = model.sequelize.Promise;
+    this.squel = squelFactory.get(model);
 
     try {
         /**
@@ -130,7 +132,7 @@ function diffFromNow(date) {
  * });
  */
 Model.prototype.criteria = function (name, config) {
-    this.criterias[name] = new Criteria(config);
+    this.criterias[name] = new Criteria(config, false, this.squel);
     return this;
 };
 
@@ -142,7 +144,7 @@ Model.prototype.criteria = function (name, config) {
  * @returns {Model} this
  */
 Model.prototype.criteriaOR = function (name, config) {
-    this.criterias[name] = new Criteria(config, true);
+    this.criterias[name] = new Criteria(config, true, this.squel);
     return this;
 };
 

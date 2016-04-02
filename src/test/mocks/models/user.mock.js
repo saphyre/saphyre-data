@@ -10,7 +10,7 @@ module.exports = function (sequelize, DataTypes) {
 
         name : DataTypes.STRING
 
-    });
+    }, { tableName : 'user' });
 
     return User;
 };

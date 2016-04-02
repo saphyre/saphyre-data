@@ -1,4 +1,4 @@
-var squel = require('squel');
+var squelFactory = require('./squel.factory');
 
 /**
  * @typedef Query~ExecResult
@@ -15,6 +15,8 @@ var squel = require('squel');
  * @constructor
  */
 function Query(sequelize, Promise) {
+    var squel = squelFactory.getBySequelize(sequelize);
+
     this.sequelize = sequelize;
     this.Promise = Promise;
     this.selectQuery = squel.select();

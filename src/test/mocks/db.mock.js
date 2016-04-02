@@ -18,7 +18,23 @@ sequelize = new Sequelize(process.env.DBNAME, process.env.USER, process.env.PASS
     syncOnAssociation : true,
     host : process.env.DBHOST,
     port : process.env.DBPORT,
-    logging : process.env.DEBUG ? console.log : false
+    logging : process.env.DEBUG ? console.log : false,
+
+    define : {
+        underscored : true,
+        freezeTableName : false,
+        syncOnAssociation : true,
+        charset : 'utf8',
+        collate : 'utf8_general_ci',
+        timestamps : true,
+        constraints : false,
+
+        updatedAt : 'updated_at',
+        createdAt : 'created_at',
+        deletedAt : 'removed_at',
+
+        paranoid : false
+    },
 });
 
 models.Author = sequelize.import(path.join(__dirname, 'models/author.mock'));

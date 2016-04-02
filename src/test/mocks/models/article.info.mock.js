@@ -11,6 +11,7 @@ module.exports = function (sequelize, DataTypes) {
         status : DataTypes.INTEGER
 
     }, {
+        tableName : 'article_info',
 
         classMethods: {
             associate: function (models) {

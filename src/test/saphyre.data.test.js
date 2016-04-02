@@ -13,7 +13,7 @@ describe('this test', function () {
     });
 
     it('should create sequelize instance and connect', function (done) {
-        mock.sequelize.sync().then(function () {
+        return mock.sequelize.sync().then(function () {
             done();
         }).catch(done);
     });
@@ -232,7 +232,6 @@ describe('saphyre data', function () {
         }).then(function (author) {
             return Article.bulkCreate([
                 {
-                    article_id : 1,
                     title : 'this is a title example',
                     content : 'this is the article content',
                     author_id : author.author_id

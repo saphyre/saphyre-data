@@ -13,6 +13,7 @@ module.exports = function (sequelize, DataTypes) {
         date : DataTypes.DATE
 
     }, {
+        tableName : 'article',
 
         paranoid : true,
 
@@ -25,7 +26,7 @@ module.exports = function (sequelize, DataTypes) {
 
                 Article.belongsToMany(models.Tag, {
                     as : 'Tags',
-                    through : 'ArticleTag',
+                    through : 'article_tag',
                     foreignKey : 'article_id',
                     otherKey : 'tag_id'
                 });

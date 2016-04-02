@@ -1,7 +1,7 @@
 var Query = require('./query'),
     Criteria = require('./criteria'),
     _ = require('lodash'),
-    squel = require('squel'),
+    squelFactory = require('./squel.factory'),
     Sequelize = require('sequelize');
 
 function getDeletedAtColumn(model) {
@@ -9,6 +9,7 @@ function getDeletedAtColumn(model) {
 }
 
 function QueryBuilder(model, provider, functions) {
+    this.squel = squelFactory.get(model);
     this.provider = provider;
     this.functions = functions;
     this.aliasCount = 0;
@@ -34,7 +35,7 @@ function applySort(builder, sort, prefix) {
         var field;
 
         if (prefix) {
-            path = prefix + '.' + path;
+            path = `${prefix}.${path}`;
         }
 
         if (_.isObject(config)) {
@@ -48,7 +49,6 @@ function applySort(builder, sort, prefix) {
             field = builder.applyPath(path);
             builder.query.order(field.property, config === 'ASC');
         }
-
     });
 }
 
@@ -71,7 +71,6 @@ function applyProjection(builder, projection, criterias, prefix, grouped, inner)
         }
 
         if (_.isObject(alias)) {
-
             if (alias.list && alias.projection) {
                 if (alias.criteria) {
                     criteria = criterias[alias.criteria.criteriaName];
@@ -88,7 +87,7 @@ function applyProjection(builder, projection, criterias, prefix, grouped, inner)
                         queryBuilder.query.where(builder.applyPath(pkName).property + ' = ?', item.$id);
 
                         if (alias.criteria) {
-                            new Criteria(alias.criteria).apply(queryBuilder, criteria, {
+                            new Criteria(alias.criteria, false, builder.squel).apply(queryBuilder, criteria, {
                                 grouped : grouped,
                                 prefix : path
                             });
@@ -159,7 +158,7 @@ QueryBuilder.prototype.toString = function () {
 
 QueryBuilder.prototype.createAlias = function (name) {
     this.aliasCount += 1;
-    return name + '_' + this.aliasCount;
+    return name.toLowerCase() + '_' + this.aliasCount;
 };
 
 QueryBuilder.prototype.projection = function (projection, criterias) {
@@ -268,7 +267,8 @@ QueryBuilder.prototype.sort = function (sort) {
 };
 
 QueryBuilder.prototype.applyPath = function (path, joinInner, force, criteria, criterias) {
-    var split = path.split('.'),
+    var squel = this.squel,
+        split = path.split('.'),
         model = this.model,
         result = { table : this.center },
         realPath = '',

@@ -5,15 +5,15 @@ module.exports = {
     },
 
     group_concat : function (path) {
-        return "STRING_AGG(" + path + ", ',')";
+        return `array_to_string(array_agg(${path}), ',')`;
     },
 
     sum : function (path) {
-        return 'SUM(' + path + ')';
+        return `SUM(${path})`;
     },
 
     count : function (path) {
-        return 'COUNT(' + path + ')';
+        return `COUNT(${path})`;
     }
 
 };

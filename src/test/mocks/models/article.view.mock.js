@@ -12,6 +12,8 @@ module.exports = function (sequelize, DataTypes) {
         ip : DataTypes.STRING
 
     }, {
+        tableName : 'article_view_model',
+
         timestamps : false,
         classMethods: {
             associate: function (models) {

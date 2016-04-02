@@ -1,5 +1,4 @@
-var _ = require('lodash'),
-    squel = require('squel');
+var _ = require('lodash');
 
 /**
  * A model Criteria, this will be the WHERE
@@ -9,14 +8,15 @@ var _ = require('lodash'),
  * @param {Boolean} [or=false]    Flag indicating if the WHERE will be composed with OR or AND
  * @constructor
  */
-function Criteria(config, or) {
+function Criteria(config, or, squel) {
+    this.squel = squel;
     this.or = or === true;
     this.config = config;
 }
 
 Criteria.prototype.apply = function (queryBuilder, values, options) {
     var config = this.config,
-        expression = squel.expr(),
+        expression = this.squel.expr(),
         where = this.or ? expression.or : expression.and,
         hasManyPresent = false,
         exprParam;
