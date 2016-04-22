@@ -1,6 +1,6 @@
 {
   "name": "saphyre-data",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "Module to enhance data retrieval for Sequelize",
   "main": "index.js",
   "scripts": {
