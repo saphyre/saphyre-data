@@ -1,3 +1,5 @@
+'use strict';
+
 var Query = require('./query'),
     Criteria = require('./criteria'),
     _ = require('lodash'),
@@ -6,6 +8,16 @@ var Query = require('./query'),
 
 function getDeletedAtColumn(model) {
     return model.options.deletedAt || 'deletedAt';
+}
+
+function getTableName(model) {
+    var tableName = model.getTableName();
+
+    if (typeof tableName == 'string') {
+        return tableName;
+    } else {
+        return tableName.schema + tableName.delimiter + tableName.tableName;
+    }
 }
 
 function QueryBuilder(model, provider, functions) {
@@ -18,16 +30,24 @@ function QueryBuilder(model, provider, functions) {
     this.Promise = model.sequelize.Promise;
     this.query = new Query(model.sequelize, model.sequelize.Promise);
 
-    this.query.from(model.tableName, this.center);
+    this.query.from(getTableName(model), this.center);
 
     if (model.options.paranoid) {
         this.query.where(this.center + '.' + getDeletedAtColumn(model) + ' IS NULL');
     }
 
+    this.primitiveFields = [];
     this.associations = {};
     this.handlers = [];
     this.globalHandlers = [];
     this.postProcesses = [];
+}
+
+function addField(isAggregated, builder, property) {
+    // only add primitive fields to use in GROUP BY if necessary
+    if (!isAggregated && builder.primitiveFields.indexOf(property) < 0) {
+        builder.primitiveFields.push(property);
+    }
 }
 
 function applySort(builder, sort, prefix) {
@@ -53,7 +73,6 @@ function applySort(builder, sort, prefix) {
 }
 
 function applyProjection(builder, projection, criterias, prefix, grouped, inner) {
-
     var provider = builder.provider,
         model = builder.model,
         handlers = builder.handlers,
@@ -106,9 +125,9 @@ function applyProjection(builder, projection, criterias, prefix, grouped, inner)
                     builder.query.field(field.property, alias.alias);
                 }
 
+                addField(alias.func && alias.func != builder.functions.convert, builder, field.property);
                 builder.createHandler(alias.alias, field.type);
             }
-
         } else {
             field = builder.applyPath(path, inner);
             associatedModel = provider.getModel(field.model);
@@ -135,6 +154,7 @@ function applyProjection(builder, projection, criterias, prefix, grouped, inner)
                 builder.createHandler(alias, Sequelize.STRING);
             } else {
                 builder.query.field(field.property, alias);
+                addField(false, builder, field.property);
                 builder.createHandler(alias, field.type);
             }
         }
@@ -144,9 +164,13 @@ function applyProjection(builder, projection, criterias, prefix, grouped, inner)
     if (pkName) {
         pk = prefix ? builder.applyPath(prefix + '.$id', inner) : builder.applyPath(pkName, inner);
         builder.query.field(pk.property, '$id');
-        if (grouped) {
-            builder.query.group(pk.property);
-        }
+        addField(false, builder, pk.property);
+    }
+
+    if (grouped) {
+        _.forEach(builder.primitiveFields, field => {
+            builder.query.group(field);
+        });
     }
 
     return grouped;
@@ -184,7 +208,7 @@ QueryBuilder.prototype.createHandler = function (alias, type) {
                         item = item[subitem];
                     } else {
                         item[subitem] = object;
-                        if (type.key == Sequelize.INTEGER.key || type.key == Sequelize.BIGINT.key) {
+                        if (type.key == Sequelize.INTEGER.key) {
                             item[subitem] = item[subitem] != null ? parseInt(item[subitem], 10) : null;
                         }
                         delete parent[alias];
@@ -192,7 +216,7 @@ QueryBuilder.prototype.createHandler = function (alias, type) {
                 });
             }
         });
-    } else if (type.key == Sequelize.INTEGER.key || type.key == Sequelize.BIGINT.key) {
+    } else if (type.key == Sequelize.INTEGER.key) {
         this.handlers.push(item => {
             item[alias] = item[alias] != null ? parseInt(item[alias], 10) : null;
         });
@@ -279,7 +303,6 @@ QueryBuilder.prototype.applyPath = function (path, joinInner, force, criteria, c
         isPropertyAssociation = false;
 
     _.forEach(split, (item, index) => {
-
         var assoc = model.associations,
             oldTable,
             joinTable,
@@ -345,17 +368,16 @@ QueryBuilder.prototype.applyPath = function (path, joinInner, force, criteria, c
                         delete criterias[criteria.criteriaName];
                     }
                 }
-                join(model.tableName, result.table, expr);
+                join(getTableName(model), result.table, expr);
             }
 
             isPropertyAssociation = index + 1 === split.length;
 
             if (hasMany) {
-                result.property = model.primaryKeyAttribute;
+                result.field = model.primaryKeyAttribute;
             } else if (isPropertyAssociation) {
                 throw new Error('Can`t select an entire Association');
             }
-
         } else {
             if (item == '$id') {
                 item = model.primaryKeyAttribute;
@@ -366,13 +388,14 @@ QueryBuilder.prototype.applyPath = function (path, joinInner, force, criteria, c
             if (model.rawAttributes[item] === undefined) {
                 throw new Error('Attribute `' + item + '` not found on ' + model.name);
             }
-            result.property = item;
+            result.field = item;
         }
-
     });
 
+    result.property = model.attributes[result.field].field;
+
     return {
-        type : model.rawAttributes[result.property].type,
+        type : model.rawAttributes[result.field].type,
         property : result.table + '.' + result.property,
         hasMany : hasMany,
         model : model,

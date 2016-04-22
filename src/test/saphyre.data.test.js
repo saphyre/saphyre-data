@@ -656,12 +656,11 @@ describe('saphyre data', function () {
                 projection : 'all',
                 criteria : {
                     tag : { name : 'one' }
-                }
+                },
+                sort : 'by-id'
             });
         }).then(function (articles) {
-
             expect(articles).with.length(2);
-
             var article = articles[0];
 
             expect(article).to.have.property('id');
@@ -722,7 +721,8 @@ describe('saphyre data', function () {
                 projection : 'viewed',
                 criteria : {
                     user : { userId : userId }
-                }
+                },
+                sort : 'by-id'
             });
         }).then(function (articles) {
             expect(articles).with.length(2);

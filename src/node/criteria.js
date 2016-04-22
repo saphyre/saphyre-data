@@ -55,7 +55,8 @@ Criteria.prototype.apply = function (queryBuilder, values, options) {
 
     if (hasManyPresent && options.grouped) {
         exprParam = expression.toParam();
-        exprParam.values.unshift(queryBuilder.functions.sum(exprParam.text) + ' > 0');
+        var sum = queryBuilder.functions.sum(`CASE WHEN ${exprParam.text} THEN 1 ELSE 0 END`);
+        exprParam.values.unshift(`${sum} > 0`);
         queryBuilder.query.having.apply(queryBuilder.query, exprParam.values);
     } else {
         queryBuilder.query.where(expression);

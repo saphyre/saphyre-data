@@ -120,6 +120,10 @@ module.exports = function (saphyreData, models) {
         operator : saphyreData.OPERATOR.EQUAL
     });
 
+    model.sort('by-id', {
+        'article_id' : 'ASC'
+    });
+
     return model;
 
 };

@@ -11,7 +11,7 @@ module.exports = function (sequelize, DataTypes) {
         name : DataTypes.STRING
 
     }, {
-        tableName : 'author',
+        tableName : 'test_author',
 
         classMethods: {
             associate: function (models) {
