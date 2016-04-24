@@ -4,10 +4,22 @@ var Query = require('./query'),
     Criteria = require('./criteria'),
     _ = require('lodash'),
     squelFactory = require('./squel.factory'),
-    Sequelize = require('sequelize');
+    Sequelize = require('sequelize'),
+    transformers = {};
+
+transformers[Sequelize.INTEGER.key] = value => value != null ? parseInt(value, 10) : null;
+transformers[Sequelize.BIGINT.key] = value => value != null ? value.toString() : null;
 
 function getDeletedAtColumn(model) {
     return model.options.deletedAt || 'deletedAt';
+}
+
+function getValue(type, value) {
+    if (value == null) {
+        return null;
+    }
+    var transformer = transformers[type.key];
+    return transformer ? transformer(value) : value;
 }
 
 function getTableName(model) {
@@ -207,18 +219,15 @@ QueryBuilder.prototype.createHandler = function (alias, type) {
                         }
                         item = item[subitem];
                     } else {
-                        item[subitem] = object;
-                        if (type.key == Sequelize.INTEGER.key) {
-                            item[subitem] = item[subitem] != null ? parseInt(item[subitem], 10) : null;
-                        }
+                        item[subitem] = getValue(type, object);
                         delete parent[alias];
                     }
                 });
             }
         });
-    } else if (type.key == Sequelize.INTEGER.key) {
+    } else if (transformers[type.key] != undefined) {
         this.handlers.push(item => {
-            item[alias] = item[alias] != null ? parseInt(item[alias], 10) : null;
+            item[alias] = getValue(type, item[alias]);
         });
     }
 };
