@@ -10,7 +10,8 @@ module.exports = function (sequelize, DataTypes) {
 
         title : DataTypes.STRING,
         content : DataTypes.BLOB,
-        date : DataTypes.DATE
+        date : DataTypes.DATE,
+        active : DataTypes.BOOLEAN
 
     }, {
         tableName : 'test_article',

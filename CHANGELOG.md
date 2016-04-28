@@ -1,5 +1,8 @@
 # Saphyre Data – Changelog
 
+## Version 1.1.2
+* **[BUG-FIX]** BOOLEAN fields will always return as Boolean in MySQL
+
 ## Version 1.1.1
 * **[BUG-FIX]** BIGINT fields will always return as String in SQLite
 

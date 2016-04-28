@@ -75,7 +75,8 @@ module.exports = function (saphyreData, models) {
     model.projection('list', {
         'article_id' : 'id',
         'title' : 'title',
-        'date' : 'date'
+        'date' : 'date',
+        'active' : 'active'
     }).use(function (article) {
         article.title = article.title.toUpperCase();
     });

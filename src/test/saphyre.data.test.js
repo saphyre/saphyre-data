@@ -47,7 +47,8 @@ describe('saphyre data', function () {
 
         return Article.create({
             title : 'this is a title example',
-            content : 'this is the article content'
+            content : 'this is the article content',
+            active : true
         }).then(function () {
             return articleData.requestList({
                 projection : 'list',
@@ -62,10 +63,12 @@ describe('saphyre data', function () {
             expect(result.list[0]).to.have.property('id');
             expect(result.list[0]).to.have.property('title').equal('THIS IS A TITLE EXAMPLE');
             expect(result.list[0]).to.have.property('date');
+            expect(result.list[0]).to.have.property('active').equal(true);
 
             return Article.create({
                 title : 'this is another title example',
-                content : 'this is the article content'
+                content : 'this is the article content',
+                active : false
             });
         }).then(function () {
             return articleData.requestList({
@@ -81,6 +84,7 @@ describe('saphyre data', function () {
             expect(result.list[0]).to.have.property('id');
             expect(result.list[0]).to.have.property('title').equal('THIS IS ANOTHER TITLE EXAMPLE');
             expect(result.list[0]).to.have.property('date');
+            expect(result.list[0]).to.have.property('active').equal(false);
 
             done();
         }).catch(done);
