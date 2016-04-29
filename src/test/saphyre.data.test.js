@@ -866,4 +866,64 @@ describe('saphyre data', function () {
         }).catch(done);
     });
 
+    it('should handle criteria inside JOIN', function () {
+        var Article = mock.models.Article,
+            Author = mock.models.Author,
+            articleData = mock.data.article,
+            User = mock.models.User,
+            ArticleViewModel = mock.models.ArticleViewModel,
+            author_id,
+            articleId,
+            anotherArticleId,
+            userId,
+            anotherUserId;
+
+        return Author.create({ name : 'the author' }).then(author => {
+            author_id = author.author_id;
+            return User.create({ name : 'a user name ' });
+        }).then(user => {
+            userId = user.user_id;
+            return User.create({ name : 'another user name ' });
+        }).then(user => {
+            anotherUserId = user.user_id;
+            return Article.create({
+                title : 'this is a title example',
+                content : 'this is the article content',
+                author_id : author_id
+            });
+        }).then(article => {
+            articleId = article.article_id;
+            return ArticleViewModel.create({
+                user_id : userId,
+                article_id : articleId
+            });
+        }).then(() => {
+            return Article.create({
+                title : 'this is another title example',
+                content : 'this is the article content',
+                author_id : author_id
+            });
+        }).then(article => {
+            anotherArticleId = article.article_id;
+            return ArticleViewModel.bulkCreate([
+                { user_id : anotherUserId, article_id : anotherArticleId },
+                { user_id : userId, article_id : anotherArticleId }
+            ]);
+        }).then(() => {
+            return articleData.list({
+                projection : 'views-count',
+                sort : 'by-id'
+            });
+        }).then(articles => {
+            expect(articles).with.length(2);
+            expect(articles[0]).to.have.property('id').equal(articleId.toString());
+            expect(articles[0]).to.have.property('title').equal('this is a title example');
+            expect(articles[0]).to.have.property('pageViews').equal('1');
+
+            expect(articles[1]).to.have.property('id').equal(anotherArticleId.toString());
+            expect(articles[1]).to.have.property('title').equal('this is another title example');
+            expect(articles[1]).to.have.property('pageViews').equal('2');
+        });
+    });
+
 });

@@ -51,6 +51,16 @@ module.exports = function (saphyreData, models) {
         }
     });
 
+    model.projection('views-count', {
+        'article_id' : 'id',
+        'title' : 'title',
+        'Views.Viewer' : {
+            joinType : 'inner',
+            alias : 'pageViews',
+            func : model.functions.count
+        }
+    });
+
     model.projection('with-info', {
         'article_id' : 'id',
         'title' : 'title',

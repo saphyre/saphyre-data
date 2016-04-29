@@ -131,14 +131,20 @@ function applyProjection(builder, projection, criterias, prefix, grouped, inner)
                     }
                 });
             } else {
+                var fieldGrouped = false;
                 field = builder.applyPath(path, alias.joinType == 'inner', false, alias.criteria, criterias);
                 if (alias.func) {
+                    // FIXME create a more elegant way to check if function is Aggregation
+                    if (alias.func != builder.functions.convert) {
+                        fieldGrouped = true;
+                        grouped = true;
+                    }
                     builder.query.field(alias.func(field.property, model, alias.options), alias.alias);
                 } else {
                     builder.query.field(field.property, alias.alias);
                 }
 
-                addField(alias.func && alias.func != builder.functions.convert, builder, field.property);
+                addField(fieldGrouped, builder, field.property);
                 builder.createHandler(alias.alias, field.type);
             }
         } else {

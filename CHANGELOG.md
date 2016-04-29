@@ -1,5 +1,8 @@
 # Saphyre Data – Changelog
 
+## Version 1.1.3
+* **[BUG-FIX]** Fixed a problem causing Aggregation functions to not generate GROUP BY on other fields.
+
 ## Version 1.1.2
 * **[BUG-FIX]** BOOLEAN fields will always return as Boolean in MySQL
 
