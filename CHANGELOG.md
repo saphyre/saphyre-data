@@ -1,5 +1,9 @@
 # Saphyre Data – Changelog
 
+## Version 1.1.4
+* **[CRITICAL]** **[BUG-FIX]** Associations with HasOne wasn't working
+* **[BUG-FIX]** Fixed an issue that was causing associations with belongsTo to be listed when the target association was removed.
+
 ## Version 1.1.3
 * **[BUG-FIX]** Fixed a problem causing Aggregation functions to not generate GROUP BY on other fields.
 

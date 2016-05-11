@@ -364,7 +364,7 @@ QueryBuilder.prototype.applyPath = function (path, joinInner, force, criteria, c
                     }
                 } else if (assoc.associationType === 'HasOne') {
                     join = leftJoin;
-                    expr.and(oldTable + '.' + assoc.foreignKey + ' = ' + result.table + '.' + assoc.identifierField || assoc.identifier); // support for sequelize 2
+                    expr.and(oldTable + '.' + assoc.foreignKey + ' = ' + result.table + '.' + assoc.target.primaryKeyAttribute);
                     if (model.options.paranoid) {
                         expr.and(result.table + '.' + getDeletedAtColumn(model) + ' IS NULL');
                     }
@@ -372,6 +372,12 @@ QueryBuilder.prototype.applyPath = function (path, joinInner, force, criteria, c
                     expr.and(oldTable + '.' + assoc.foreignKey + ' = ' + result.table + '.' + assoc.targetIdentifier);
                     if (model.options.paranoid) {
                         expr.and(result.table + '.' + getDeletedAtColumn(model) + ' IS NULL');
+                    }
+
+                    if (!criteria) {
+                        // should add this criteria only if the join doesn't already have a criteria
+                        this.query.where(squel.expr().or(oldTable + '.' + assoc.source.primaryKeyAttribute + ' IS NULL')
+                            .or(result.table + '.' + assoc.target.primaryKeyAttribute + ' IS NOT NULL'));
                     }
                 }
 

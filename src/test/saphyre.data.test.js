@@ -492,11 +492,15 @@ describe('saphyre data', function () {
 
     it('should left join associations', function (done) {
         var Article = mock.models.Article,
+            Author = mock.models.Author,
             articleData = mock.data.article;
 
-        return Article.create({
-            title : 'this is a title example',
-            content : 'this is the article content'
+        return Author.create({ name : 'the author' }).then(function (author) {
+            return Article.create({
+                title : 'this is a title example',
+                content : 'this is the article content',
+                author_id : author.author_id
+            });
         }).then(function () {
             return articleData.list({
                 projection : 'with-info'
@@ -866,7 +870,7 @@ describe('saphyre data', function () {
         }).catch(done);
     });
 
-    it('should handle criteria inside JOIN', function () {
+    it('should handle criteria inside JOIN 2', function () {
         var Article = mock.models.Article,
             Author = mock.models.Author,
             articleData = mock.data.article,
