@@ -92,7 +92,7 @@ function lessThan(expression, property, value) {
 }
 
 function greaterThan(expression, property, value) {
-    expression(property + ' < ?', value);
+    expression(property + ' > ?', value);
 }
 
 function like(expression, property, value) {
