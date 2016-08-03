@@ -112,7 +112,7 @@ function applyProjection(builder, projection, criterias, prefix, grouped, inner)
                     if (item != null) {
                         var queryBuilder = new QueryBuilder(builder.model, builder.provider, builder.functions);
                         queryBuilder.applyPath(path + '.$id', true, true);
-                        applyProjection(queryBuilder, alias.projection, criterias, path, true, true);
+                        applyProjection(queryBuilder, alias.projection, criterias, path, true, alias.joinType != 'left');
                         if (alias.sort) {
                             applySort(queryBuilder, alias.sort, path);
                         }

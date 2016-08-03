@@ -12,10 +12,8 @@ describe('this test', function () {
         expect(mock.models).to.have.property('ArticleViewModel');
     });
 
-    it('should create sequelize instance and connect', function (done) {
-        return mock.sequelize.sync().then(function () {
-            done();
-        }).catch(done);
+    it('should create sequelize instance and connect', () => {
+        return mock.sequelize.sync();
     });
 });
 
@@ -41,7 +39,7 @@ describe('saphyre data', function () {
         expect(projection).to.have.property('middlewares');
     });
 
-    it('should return a page', function (done) {
+    it('should return a page', () => {
         var Article = mock.models.Article,
             articleData = mock.data.article;
 
@@ -85,12 +83,10 @@ describe('saphyre data', function () {
             expect(result.list[0]).to.have.property('title').equal('THIS IS ANOTHER TITLE EXAMPLE');
             expect(result.list[0]).to.have.property('date');
             expect(result.list[0]).to.have.property('active').equal(false);
-
-            done();
-        }).catch(done);
+        });
     });
 
-    it('should return a single row', function (done) {
+    it('should return a single row', () => {
         var Article = mock.models.Article,
             articleData = mock.data.article;
 
@@ -105,12 +101,10 @@ describe('saphyre data', function () {
             expect(article).to.have.property('id');
             expect(article).to.have.property('title').equal('THIS IS A TITLE EXAMPLE');
             expect(article).to.have.property('date');
-
-            done();
-        }).catch(done);
+        });
     });
 
-    it('should return a list', function (done) {
+    it('should return a list', () => {
         var Article = mock.models.Article,
             articleData = mock.data.article;
 
@@ -123,12 +117,10 @@ describe('saphyre data', function () {
             });
         }).then(function (list) {
             expect(list).to.have.length(1);
-
-            done();
-        }).catch(done);
+        });
     });
 
-    it('should cache', function (done) {
+    it('should cache', () => {
         var Tag = mock.models.Tag,
             tagData = mock.data.tag;
 
@@ -149,12 +141,10 @@ describe('saphyre data', function () {
                 expect(tagData.cache).to.exist;
                 expect(tagData.cache).to.have.property('timestamp').equal(timestamp);
             });
-        }).then(function () {
-            done();
-        }).catch(done);
+        });
     });
 
-    it('shouldn`t cache', function (done) {
+    it('shouldn`t cache', () => {
         var Tag = mock.models.Tag,
             tagData = mock.data.tag;
 
@@ -176,12 +166,10 @@ describe('saphyre data', function () {
             });
         }).then(function () {
             expect(tagData.cache).to.not.exist;
-
-            done();
-        }).catch(done);
+        });
     });
 
-    it('should handle cached data', function (done) {
+    it('should handle cached data', () => {
         var Article = mock.models.Article,
             Author = mock.models.Author,
             Tag = mock.models.Tag,
@@ -215,12 +203,10 @@ describe('saphyre data', function () {
             expect(article).to.have.property('tags').with.length(2);
             expect(article.tags[0]).to.have.property('name').equal('one');
             expect(article.tags[1]).to.have.property('name').equal('another');
-
-            done();
-        }).catch(done);
+        });
     });
 
-    it('should handle cached data in sublists', function (done) {
+    it('should handle cached data in sublists', () => {
         var Article = mock.models.Article,
             Author = mock.models.Author,
             Tag = mock.models.Tag,
@@ -269,12 +255,10 @@ describe('saphyre data', function () {
             expect(author.articles[1]).to.have.property('id');
             expect(author.articles[1]).to.have.property('title').equal('this is another title example');
             expect(author.articles[1]).to.have.property('tags').with.length(0);
-
-            done();
-        }).catch(done);
+        });
     });
 
-    it('should handle cached data in sublists, even when there`s none', function (done) {
+    it('should handle cached data in sublists, even when there`s none', () => {
         var Article = mock.models.Article,
             Author = mock.models.Author,
             authorData = mock.data.author;
@@ -298,12 +282,10 @@ describe('saphyre data', function () {
             expect(author.articles[0]).to.have.property('id');
             expect(author.articles[0]).to.have.property('title').equal('this is a title example');
             expect(author.articles[0]).to.have.property('tags').with.length(0);
-
-            done();
-        }).catch(done);
+        });
     });
 
-    it('should handle lists in sublists', function (done) {
+    it('should handle lists in sublists', () => {
         var Article = mock.models.Article,
             Author = mock.models.Author,
             Tag = mock.models.Tag,
@@ -350,12 +332,10 @@ describe('saphyre data', function () {
             expect(author.articleTags[0]).to.have.property('id');
             expect(author.articleTags[0]).to.have.property('name').equal('one');
             expect(author.articleTags[1]).to.have.property('name').equal('another');
-
-            done();
-        }).catch(done);
+        });
     });
 
-    it('should return no rows in sublists when there`s none', function (done) {
+    it('should return no rows in sublists when there`s none', () => {
         var Author = mock.models.Author,
             Tag = mock.models.Tag,
             authorData = mock.data.author;
@@ -375,12 +355,10 @@ describe('saphyre data', function () {
             expect(author).to.have.property('id');
             expect(author).to.have.property('name').equal('the author');
             expect(author).to.have.property('articles').with.length(0);
-
-            done();
-        }).catch(done);
+        });
     });
 
-    it('should return no rows in sublists when there`s none, on belongsToMany assoc', function (done) {
+    it('should return no rows in sublists when there`s none, on belongsToMany assoc', () => {
         var Author = mock.models.Author,
             Article = mock.models.Article,
             articleData = mock.data.article;
@@ -399,12 +377,10 @@ describe('saphyre data', function () {
             expect(article).to.have.property('id');
             expect(article).to.have.property('title').equal('this is a title example');
             expect(article).to.have.property('tags').with.length(0);
-
-            done();
-        }).catch(done);
+        });
     });
 
-    it('should filter data using criterias', function (done) {
+    it('should filter data using criterias', () => {
         var Article = mock.models.Article,
             articleData = mock.data.article;
 
@@ -431,11 +407,10 @@ describe('saphyre data', function () {
             });
         }).then(function (article) {
             expect(article).to.be.undefined;
-            done();
-        }).catch(done);
+        });
     });
 
-    it('should filter logically removed rows', function (done) {
+    it('should filter logically removed rows', () => {
         var Article = mock.models.Article,
             articleData = mock.data.article,
             article;
@@ -458,11 +433,10 @@ describe('saphyre data', function () {
             });
         }).then(function (articles) {
             expect(articles).with.length(0);
-            done();
-        }).catch(done);
+        });
     });
 
-    it('should throw error on unknown properties', function (done) {
+    it('should throw error on unknown properties', () => {
         var articleData = mock.data.article,
             error;
 
@@ -472,11 +446,10 @@ describe('saphyre data', function () {
             error = err;
         }).then(function () {
             expect(error).to.exist;
-            done();
         });
     });
 
-    it('should throw error on unregistered projection', function (done) {
+    it('should throw error on unregistered projection', () => {
         var articleData = mock.data.article,
             error;
 
@@ -486,11 +459,10 @@ describe('saphyre data', function () {
             error = err;
         }).then(function () {
             expect(error).to.exist;
-            done();
         });
     });
 
-    it('should left join associations', function (done) {
+    it('should left join associations', () => {
         var Article = mock.models.Article,
             articleData = mock.data.article;
 
@@ -503,12 +475,10 @@ describe('saphyre data', function () {
             });
         }).then(function (articles) {
             expect(articles).with.length(1);
-
-            done();
-        }).catch(done);
+        });
     });
 
-    it('should count', function (done) {
+    it('should count', () => {
         var Article = mock.models.Article,
             articleData = mock.data.article;
 
@@ -533,11 +503,10 @@ describe('saphyre data', function () {
             });
         }).then(function (count) {
             expect(count).to.be.equal(1);
-            done();
-        }).catch(done);
+        });
     });
 
-    it('should criteria operation IS_NULL / IS_NOT_NULL', function (done) {
+    it('should criteria operation IS_NULL / IS_NOT_NULL', () => {
         var Article = mock.models.Article,
             articleData = mock.data.article;
 
@@ -570,11 +539,10 @@ describe('saphyre data', function () {
         }).then(function (list) {
             expect(list).with.length(1);
             expect(list[0]).to.have.property('title').equal('THIS IS ANOTHER TITLE EXAMPLE');
-            done();
-        }).catch(done);
+        });
     });
 
-    it('should criteria operation IN / NOT_IN', function (done) {
+    it('should criteria operation IN / NOT_IN', () => {
         var Article = mock.models.Article,
             articleData = mock.data.article,
             articleId;
@@ -615,11 +583,10 @@ describe('saphyre data', function () {
         }).then(function (list) {
             expect(list).with.length(1);
             expect(list[0]).to.have.property('title').equal('THIS IS A TITLE EXAMPLE');
-            done();
-        }).catch(done);
+        });
     });
 
-    it('compared data should not affect cached HasMany results', function (done) {
+    it('compared data should not affect cached HasMany results', () => {
         var Article = mock.models.Article,
             Author = mock.models.Author,
             Tag = mock.models.Tag,
@@ -673,12 +640,10 @@ describe('saphyre data', function () {
             expect(article).to.have.property('tags').with.length(2);
             expect(article.tags[0]).to.have.property('name').equal('one');
             expect(article.tags[1]).to.have.property('name').equal('another');
-
-            done();
-        }).catch(done);
+        });
     });
 
-    it('should handle criteria inside JOIN', function (done) {
+    it('should handle criteria inside JOIN', () => {
         var Article = mock.models.Article,
             Author = mock.models.Author,
             articleData = mock.data.article,
@@ -754,12 +719,10 @@ describe('saphyre data', function () {
             expect(articles).with.length(2);
             expect(articles[0]).to.have.property('viewed').equal(false);
             expect(articles[1]).to.have.property('viewed').equal(false);
-
-            done();
-        }).catch(done);
+        });
     });
 
-    it('should handle criteria inside sublist', function (done) {
+    it('should handle criteria inside sublist', () => {
         var Article = mock.models.Article,
             Author = mock.models.Author,
             articleData = mock.data.article,
@@ -833,16 +796,14 @@ describe('saphyre data', function () {
             });
         }).then(function (article) {
             expect(article).to.have.property('viewers').with.length(0);
-
-            done();
-        }).catch(done);
+        });
     });
 
     it('should handle number format error', function (done) {
         var Article = mock.models.Article,
             articleData = mock.data.article;
 
-        return Article.create({
+        Article.create({
             title : 'this is a title example',
             content : 'this is the article content'
         }).then(function () {
@@ -861,12 +822,10 @@ describe('saphyre data', function () {
             });
         }).then(function () {
             done('should fail');
-        }).catch(function () {
-            done();
-        }).catch(done);
+        }).catch(() => done());
     });
 
-    it('should handle criteria inside JOIN', function () {
+    it('should handle criteria inside JOIN', () => {
         var Article = mock.models.Article,
             Author = mock.models.Author,
             articleData = mock.data.article,
