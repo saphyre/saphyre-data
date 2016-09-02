@@ -152,6 +152,23 @@ It's possible to sort on a RAW text, like alias.
         }
     });
     
+You can create multiple sorts
+
+model.sorts({
+     publishDt : 'publish_dt',
+     name : 'name'
+});
+
+And internally it looks like
+
+model.sort('publishDt', { publish_dt : 'ASC' });
+model.sort('-publishDt', { publish_dt : 'DESC' });
+model.sort('name', { name : 'ASC' });
+model.sort('-name', { name : 'DESC' });
+ 
+You can create sorts based on an existing projection
+
+model.sortProjection('projectionName');
     
 ## Data retrieval
 

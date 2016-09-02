@@ -235,6 +235,54 @@ Model.prototype.sort = function (name, config) {
     return this;
 };
 
+/**
+ * Create multiple sorts to the model (ASC and DESC)
+ *
+ * @param {Object}  config    The sort config
+ * @returns {Model} this
+ *
+ * @example
+ * model.sorts({
+ *     publishDt : 'publish_dt',
+ *     name : 'name'
+ * });
+ * // And internally it looks like
+ * model.sort('publishDt', { publish_dt : 'ASC' });
+ * model.sort('-publishDt', { publish_dt : 'DESC' });
+ * model.sort('name', { name : 'ASC' });
+ * model.sort('-name', { name : 'DESC' });
+ */
+Model.prototype.sortMultiple = function (config) {
+    _.forEach(config, (value, key) => {
+        if (_.isString(value)) {
+            this.sort(value, createObject(key, 'ASC'));
+            this.sort(`-${value}`, createObject(key, 'DESC'));
+        }
+    });
+    return this;
+};
+
+/**
+ * Create multiple sorts to the model (ASC and DESC)
+ * according to a configured projection
+ * @param {string} name The projection name
+ */
+Model.prototype.sortProjection = function (name) {
+    var projection = this.projections[name];
+    if (!projection) {
+        throw new Error(`Undefined projection '${name}`);
+    }
+    console.log(projection.config);
+    return this.sortMultiple(projection.config);
+};
+
+function createObject(key, value) {
+    'use strict';
+    let obj = {};
+    obj[key] = value;
+    return obj;
+}
+
 Model.prototype.buildQuery = function (config) {
     var builder = new QueryBuilder(this.model, this.provider, this.functions),
         projection,
@@ -348,6 +396,7 @@ Model.prototype.requestList = function (config) {
                     result : result.list
                 };
             }
+            result.sort = config.sort;
             return Promise.resolve(result);
         });
     } catch (err) {

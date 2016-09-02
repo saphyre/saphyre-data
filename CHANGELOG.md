@@ -1,5 +1,8 @@
 # Saphyre Data – Changelog
 
+## Version 1.2.0
+* **[FEATURE]** Added function to create sorts based on an existing projection
+
 ## Version 1.1.3
 * **[BUG-FIX]** Fixed a problem causing Aggregation functions to not generate GROUP BY on other fields.
 
