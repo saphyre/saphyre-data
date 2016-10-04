@@ -272,7 +272,6 @@ Model.prototype.sortProjection = function (name) {
     if (!projection) {
         throw new Error(`Undefined projection '${name}`);
     }
-    console.log(projection.config);
     return this.sortMultiple(projection.config);
 };
 
