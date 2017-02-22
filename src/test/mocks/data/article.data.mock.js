@@ -4,7 +4,7 @@ module.exports = function (saphyreData, models) {
         model = saphyreData.createModel(Article);
 
     model.projection('all', {
-        'article_id' : 'id',
+        '$id' : 'id',
         'title' : 'title',
         'content' : 'content',
         'Author.author_id' : 'author.id',
@@ -13,7 +13,7 @@ module.exports = function (saphyreData, models) {
     });
 
     model.projection('viewed', {
-        'article_id' : 'id',
+        'id' : 'id',
         'title' : 'title',
         'content' : 'content',
         'Author.author_id' : 'author.id',
@@ -33,7 +33,7 @@ module.exports = function (saphyreData, models) {
     });
 
     model.projection('viewers', {
-        'article_id' : 'id',
+        'id' : 'id',
         'title' : 'title',
         'content' : 'content',
         'Views.Viewer' : {
@@ -52,7 +52,7 @@ module.exports = function (saphyreData, models) {
     });
 
     model.projection('views-count', {
-        'article_id' : 'id',
+        'id' : 'id',
         'title' : 'title',
         'Views.Viewer' : {
             joinType : 'inner',
@@ -62,7 +62,7 @@ module.exports = function (saphyreData, models) {
     });
 
     model.projection('with-info', {
-        'article_id' : 'id',
+        'id' : 'id',
         'title' : 'title',
         'Author.author_id' : 'author.id',
         'Author.name' : 'author.name',
@@ -71,7 +71,7 @@ module.exports = function (saphyreData, models) {
     });
 
     model.projection('tags-no-cache', {
-        'article_id' : 'id',
+        'id' : 'id',
         'title' : 'title',
         'Tags' : {
             list : 'tags',
@@ -83,7 +83,7 @@ module.exports = function (saphyreData, models) {
     });
 
     model.projection('list', {
-        'article_id' : 'id',
+        'id' : 'id',
         'title' : 'title',
         'date' : 'date',
         'active' : 'active'
@@ -97,7 +97,7 @@ module.exports = function (saphyreData, models) {
 
     model.criteria('id', {
         name : 'id',
-        property : 'article_id',
+        property : 'id',
         operator : saphyreData.OPERATOR.EQUAL
     });
 
@@ -115,13 +115,13 @@ module.exports = function (saphyreData, models) {
 
     model.criteria('ids', {
         name : 'ids',
-        property : 'article_id',
+        property : 'id',
         operator : saphyreData.OPERATOR.IN
     });
 
     model.criteria('not-ids', {
         name : 'not-ids',
-        property : 'article_id',
+        property : 'id',
         operator : saphyreData.OPERATOR.NOT_IN
     });
 
@@ -132,7 +132,7 @@ module.exports = function (saphyreData, models) {
     });
 
     model.sort('by-id', {
-        'article_id' : 'ASC'
+        'id' : 'ASC'
     });
 
     return model;

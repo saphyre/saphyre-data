@@ -2,10 +2,11 @@ module.exports = function (sequelize, DataTypes) {
 
     var Article = sequelize.define('Article', {
 
-        article_id : {
+        id : {
             type : DataTypes.BIGINT,
             primaryKey : true,
-            autoIncrement : true
+            autoIncrement : true,
+            field : 'article_id'
         },
 
         title : DataTypes.STRING,

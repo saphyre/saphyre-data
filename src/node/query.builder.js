@@ -357,7 +357,7 @@ QueryBuilder.prototype.applyPath = function (path, joinInner, force, criteria, c
                             expr.and(result.table + '.' + getDeletedAtColumn(model) + ' IS NULL');
                         }
                     } else {
-                        expr.and(oldTable + '.' + assoc.source.primaryKeyAttribute + ' = ' + result.table + '.' + assoc.foreignKey);
+                        expr.and(oldTable + '.' + assoc.source.primaryKeyField + ' = ' + result.table + '.' + assoc.foreignKey);
                         if (model.options.paranoid) {
                             expr.and(result.table + '.' + getDeletedAtColumn(model) + ' IS NULL');
                         }
@@ -369,7 +369,7 @@ QueryBuilder.prototype.applyPath = function (path, joinInner, force, criteria, c
                         expr.and(result.table + '.' + getDeletedAtColumn(model) + ' IS NULL');
                     }
                 } else if (assoc.associationType === 'BelongsTo') {
-                    expr.and(oldTable + '.' + assoc.foreignKey + ' = ' + result.table + '.' + assoc.targetIdentifier);
+                    expr.and(oldTable + '.' + assoc.foreignKey + ' = ' + result.table + '.' + assoc.target.rawAttributes[assoc.targetIdentifier].field);
                     if (model.options.paranoid) {
                         expr.and(result.table + '.' + getDeletedAtColumn(model) + ' IS NULL');
                     }

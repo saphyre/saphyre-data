@@ -9,7 +9,7 @@ module.exports = function (saphyreData, models) {
         'Articles' : {
             list : 'articles',
             projection : {
-                'article_id' : 'id',
+                'id' : 'id',
                 'title' : 'title',
                 'Tags' : 'tags'
             }

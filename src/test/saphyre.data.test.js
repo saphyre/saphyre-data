@@ -391,7 +391,7 @@ describe('saphyre data', function () {
             return articleData.single({
                 projection : 'list',
                 criteria : {
-                    id : { id : article.article_id }
+                    id : { id : article.id }
                 }
             });
         }).then(function (article) {
@@ -672,7 +672,7 @@ describe('saphyre data', function () {
         }).then(function (article) {
             return ArticleViewModel.create({
                 user_id : userId,
-                article_id : article.article_id
+                article_id : article.id
             });
         }).then(function () {
             return Article.create({
@@ -683,7 +683,7 @@ describe('saphyre data', function () {
         }).then(function (article) {
             return ArticleViewModel.create({
                 user_id : anotherUserId,
-                article_id : article.article_id
+                article_id : article.id
             });
         }).then(function () {
             return articleData.list({
@@ -750,10 +750,10 @@ describe('saphyre data', function () {
                 author_id : author_id
             });
         }).then(function (article) {
-            articleId = article.article_id;
+            articleId = article.id;
             return ArticleViewModel.create({
                 user_id : userId,
-                article_id : article.article_id
+                article_id : article.id
             });
         }).then(function () {
             return Article.create({
@@ -764,7 +764,7 @@ describe('saphyre data', function () {
         }).then(function (article) {
             return ArticleViewModel.create({
                 user_id : anotherUserId,
-                article_id : article.article_id
+                article_id : article.id
             });
         }).then(function () {
             return articleData.single({
@@ -851,7 +851,7 @@ describe('saphyre data', function () {
                 author_id : author_id
             });
         }).then(article => {
-            articleId = article.article_id;
+            articleId = article.id;
             return ArticleViewModel.create({
                 user_id : userId,
                 article_id : articleId
@@ -863,7 +863,7 @@ describe('saphyre data', function () {
                 author_id : author_id
             });
         }).then(article => {
-            anotherArticleId = article.article_id;
+            anotherArticleId = article.id;
             return ArticleViewModel.bulkCreate([
                 { user_id : anotherUserId, article_id : anotherArticleId },
                 { user_id : userId, article_id : anotherArticleId }

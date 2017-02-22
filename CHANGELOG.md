@@ -1,5 +1,8 @@
 # Saphyre Data – Changelog
 
+## Version 1.2.1
+* **[BUG-FIX]** Fixed a problem causing invalid query when using Models with primary key different from column name. E.g: `id : { field : 'table_id', ... }`
+
 ## Version 1.2.0
 * **[FEATURE]** Added function to create sorts based on an existing projection
 
