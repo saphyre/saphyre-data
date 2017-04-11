@@ -315,11 +315,13 @@ Model.prototype.buildQuery = function (config) {
 
     if (config.criteria !== undefined) {
         _.forEach(config.criteria, (values, name) => {
-            var criteria = criterias[name];
-            if (criteria === undefined) {
-                throw new Error('Criteria named `' + name + '` not found');
+            if (values !== undefined) {
+                var criteria = criterias[name];
+                if (criteria === undefined) {
+                    throw new Error('Criteria named `' + name + '` not found');
+                }
+                criteria.apply(builder, values, { grouped : grouped });
             }
-            criteria.apply(builder, values, { grouped : grouped });
         });
     }
 
