@@ -327,6 +327,11 @@ QueryBuilder.prototype.applyPath = function (path, joinInner, force, criteria, c
 
         realPath += realPath.length > 0 ? '.' + item : item;
 
+        if (item[item.length -1] === '?') {
+            item = item.substring(0, item.length - 1);
+            join = leftJoin;
+        }
+
         if (assoc[item] !== undefined) {
             assoc = assoc[item];
             model = assoc.target;
