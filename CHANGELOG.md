@@ -1,5 +1,11 @@
 # Saphyre Data – Changelog
 
+## Version 1.4.0
+* **[FEATURE]** Added option to sort randomly
+
+## Version 1.3.0
+* **[FEATURE]** Added option to left join BelongsTo associations
+
 ## Version 1.2.1
 * **[BUG-FIX]** Fixed a problem causing invalid query when using Models with primary key different from column name. E.g: `id : { field : 'table_id', ... }`
 

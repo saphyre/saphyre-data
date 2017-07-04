@@ -50,6 +50,7 @@ models.ArticleInfo.associate(models);
 models.ArticleViewModel.associate(models);
 
 module.exports = {
+    SaphyreData : SaphyreData,
     sequelize : sequelize,
     models : models,
     data : {

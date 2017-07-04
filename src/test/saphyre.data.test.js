@@ -1,6 +1,7 @@
 var chai   = require('chai'),
     expect = chai.expect,
-    mock = require('./mocks/db.mock');
+    mock = require('./mocks/db.mock'),
+    SaphyreData = mock.SaphyreData;
 
 describe('this test', function () {
     it('should have 6 models', function () {
@@ -101,6 +102,23 @@ describe('saphyre data', function () {
             expect(article).to.have.property('id');
             expect(article).to.have.property('title').equal('THIS IS A TITLE EXAMPLE');
             expect(article).to.have.property('date');
+        });
+    });
+
+    it('should sort random', () => {
+        var Article = mock.models.Article,
+            articleData = mock.data.article;
+
+        return Article.create({
+            title : 'this is a title example',
+            content : 'this is the article content'
+        }).then(function () {
+            return articleData.list({
+                projection : 'list',
+                sort : SaphyreData.RANDOM
+            });
+        }).then(function (list) {
+            expect(list).to.have.length(1);
         });
     });
 

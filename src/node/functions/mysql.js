@@ -5,5 +5,6 @@ module.exports = {
     },
     group_concat : path => `GROUP_CONCAT(${path})`,
     sum : path => `SUM(${path})`,
-    count : path => `COUNT(${path})`
+    count : path => `COUNT(${path})`,
+    random : () => `RAND()`
 };

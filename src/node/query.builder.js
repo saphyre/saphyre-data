@@ -1,6 +1,7 @@
 'use strict';
 
 var Query = require('./query'),
+    Consts = require('./consts'),
     Criteria = require('./criteria'),
     _ = require('lodash'),
     squelFactory = require('./squel.factory'),
@@ -78,6 +79,8 @@ function applySort(builder, sort, prefix) {
                 field = builder.applyPath(path);
                 builder.query.order(field.property, config.direction === 'ASC');
             }
+        } else if (Consts.RANDOM === config) {
+            builder.query.order(builder.functions.random());
         } else {
             field = builder.applyPath(path);
             builder.query.order(field.property, config === 'ASC');

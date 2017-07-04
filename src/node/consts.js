@@ -1,0 +1,1 @@
+exports.RANDOM = '$RANDOM';

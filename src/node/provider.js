@@ -1,4 +1,5 @@
 var Model = require('./model'),
+    Consts = require('./consts'),
     Criteria = require('./criteria'),
     Query = require('./query');
 
@@ -34,5 +35,6 @@ Provider.prototype.getModel = function (sequelizeModel) {
 
 Provider.prototype.OPERATOR = Criteria.prototype.OPERATOR;
 Provider.prototype.Query = Query;
+Provider.prototype.RANDOM = Consts.RANDOM;
 
 module.exports = Provider;

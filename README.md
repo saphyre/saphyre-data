@@ -39,13 +39,14 @@ Sorts are used to indicate the order option from the database, this option is si
         'article_id' : 'id', // article_id as id
         'created_at' : 'created_at',
         'title' : 'title',
-        
-        // the association Author will be automatically joined
-        'Author.user_id' : 'author.id', 
+
+        // association ending with question mark means that will be LEFT JOINED
+        // the association Author will be automatically joined (in this case, LEFT JOIN)
+        'Author?.user_id' : 'author.id',
         // an object author will be created
-        'Author.nickname' : 'author.nickname', 
+        'Author?.nickname' : 'author.nickname',
         // nickname will be a property of the author object recently created
-        'Author.slug' : 'author.slug',
+        'Author?.slug' : 'author.slug',
         
         // Association Category will be automatically joined
         'Category.name' : 'category' 
@@ -216,6 +217,15 @@ model.sortProjection('projectionName');
             'author' : 1 // it's possible to use 0..N criterias
         },
     }).then(function (aNumber) {
+
+    });
+
+It's also possible to sort randomly
+
+    model.list({
+        projection : 'list',
+        sort : SaphyreData.RANDOM
+    }).then(function (randomSortedList) {
 
     });
     

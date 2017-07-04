@@ -1,4 +1,5 @@
 var Projection = require('./projection'),
+    Consts = require('./consts'),
     QueryBuilder = require('./query.builder'),
     squelFactory = require('./squel.factory'),
     Criteria = require('./criteria'),
@@ -57,6 +58,8 @@ function Model(provider, options) {
     this.provider = provider;
     this.criterias = {};
     this.sorts = {};
+    this.sorts[Consts.RANDOM] = new Sort(Consts.RANDOM);
+
     this.projections = {
         '$count' : new Projection({})
     };
