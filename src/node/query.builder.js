@@ -65,6 +65,11 @@ function addField(isAggregated, builder, property) {
 }
 
 function applySort(builder, sort, prefix) {
+    if (Consts.RANDOM === sort) {
+        builder.query.order(builder.functions.random());
+        return;
+    }
+
     _.forEach(sort, (config, path) => {
         var field;
 
@@ -79,8 +84,6 @@ function applySort(builder, sort, prefix) {
                 field = builder.applyPath(path);
                 builder.query.order(field.property, config.direction === 'ASC');
             }
-        } else if (Consts.RANDOM === config) {
-            builder.query.order(builder.functions.random());
         } else {
             field = builder.applyPath(path);
             builder.query.order(field.property, config === 'ASC');
