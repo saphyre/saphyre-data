@@ -290,6 +290,7 @@ Model.prototype.buildQuery = function (config) {
         projection,
         criterias = this.criterias,
         sort,
+        sorts = this.sorts,
         grouped;
 
     config = config || {};
@@ -307,13 +308,16 @@ Model.prototype.buildQuery = function (config) {
     grouped = builder.projection(projection, config.criteria);
 
     if (config.sort !== undefined) {
-        sort = this.sorts[config.sort];
+        sort = _.isArray(config.sort) ? config.sort : [config.sort];
+        _.forEach(sort, function (item) {
+            item = sorts[item];
 
-        if (sort === undefined) {
-            throw new Error('Undefined sort `' + config.sort + '`');
-        }
+            if (item === undefined) {
+                throw new Error('Undefined sort `' + config.sort + '`');
+            }
 
-        builder.sort(sort);
+            builder.sort(item);
+        });
     }
 
     if (config.criteria !== undefined) {

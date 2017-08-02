@@ -1,5 +1,8 @@
 # Saphyre Data – Changelog
 
+## Version 1.5.0
+* **[ENHANCEMENT]** list and request list now can be sorted by more than one configured sort (with array)
+
 ## Version 1.4.0
 * **[FEATURE]** Added option to sort randomly
 
