@@ -375,7 +375,7 @@ QueryBuilder.prototype.applyPath = function (path, joinInner, force, criteria, c
                     }
                 } else if (assoc.associationType === 'HasOne') {
                     join = leftJoin;
-                    expr.and(oldTable + '.' + assoc.sourceKey + ' = ' + result.table + '.' + assoc.identifierField || assoc.identifier); // support for sequelize 2
+                    expr.and(oldTable + '.' + assoc.source.primaryKeyField + ' = ' + result.table + '.' + assoc.identifierField || assoc.identifier); // support for sequelize 2
                     if (model.options.paranoid) {
                         expr.and(result.table + '.' + getDeletedAtColumn(model) + ' IS NULL');
                     }
