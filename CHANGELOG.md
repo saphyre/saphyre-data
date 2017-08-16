@@ -1,5 +1,8 @@
 # Saphyre Data – Changelog
 
+## Version 1.5.1
+* **[BUG-FIX]** Fixed a problem with hasOne and association with primaryKey custom field value
+
 ## Version 1.5.0
 * **[ENHANCEMENT]** list and request list now can be sorted by more than one configured sort (with array)
 
