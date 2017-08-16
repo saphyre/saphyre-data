@@ -2,10 +2,11 @@ module.exports = function (sequelize, DataTypes) {
 
     var ArticleViewModel = sequelize.define('ArticleViewModel', {
 
-        article_view_id : {
+        id : {
             type : DataTypes.BIGINT,
             primaryKey : true,
-            autoIncrement : true
+            autoIncrement : true,
+            field : 'article_view_id'
         },
 
         access_dt : DataTypes.DATE,
