@@ -361,9 +361,9 @@ QueryBuilder.prototype.applyPath = function (path, joinInner, force, criteria, c
                     if (assoc.doubleLinked || assoc.associationType === 'BelongsToMany') {
                         joinTable = oldTable + '_' + result.table;
                         join(assoc.combinedName, joinTable,
-                            oldTable + '.' + assoc.foreignKey + ' = ' + joinTable + '.' + assoc.identifier);
+                            oldTable + '.' + assoc.source.primaryKeyField + ' = ' + joinTable + '.' + assoc.identifier);
 
-                        expr.and(joinTable + '.' + assoc.foreignIdentifier + ' = ' + result.table + '.' + assoc.foreignIdentifier);
+                        expr.and(joinTable + '.' + assoc.foreignIdentifier + ' = ' + result.table + '.' + assoc.target.primaryKeyField);
                         if (model.options.paranoid) {
                             expr.and(result.table + '.' + getDeletedAtColumn(model) + ' IS NULL');
                         }
