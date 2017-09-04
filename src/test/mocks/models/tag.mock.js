@@ -2,10 +2,11 @@ module.exports = function (sequelize, DataTypes) {
 
     var Tag = sequelize.define('Tag', {
 
-        tag_id : {
+        id : {
             type : DataTypes.BIGINT,
             primaryKey : true,
-            autoIncrement : true
+            autoIncrement : true,
+            field: 'tag_id'
         },
 
         name : DataTypes.STRING
