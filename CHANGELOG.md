@@ -1,5 +1,8 @@
 # Saphyre Data – Changelog
 
+## Version 1.5.2
+* **[BUG-FIX]** Fixing association problems with Models with custom primaryKey field names
+
 ## Version 1.5.1
 * **[BUG-FIX]** Fixed a problem with hasOne and association with primaryKey custom field value
 
