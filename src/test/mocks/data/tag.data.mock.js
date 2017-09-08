@@ -8,7 +8,7 @@ module.exports = function (saphyreData, models) {
         });
 
     model.projection('default', {
-        'tag_id' : 'id',
+        'id' : 'id',
         'name' : 'name'
     });
 

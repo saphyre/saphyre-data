@@ -76,7 +76,7 @@ module.exports = function (saphyreData, models) {
         'Tags' : {
             list : 'tags',
             projection : {
-                'tag_id' : 'id',
+                'id' : 'id',
                 'name' : 'name'
             }
         }
