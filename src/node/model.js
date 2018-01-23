@@ -441,8 +441,6 @@ Model.prototype.list = function (config) {
         cached;
 
     config = config || {};
-    delete config.page;
-    delete config.pageSize;
 
     cached = config.cached !== false && this.cached;
 
