@@ -34,7 +34,9 @@ function getTableName(model) {
     }
 }
 
-function QueryBuilder(model, provider, functions) {
+function QueryBuilder(model, provider, functions, config) {
+    var transaction = config && config.transaction;
+
     this.squel = squelFactory.get(model);
     this.provider = provider;
     this.functions = functions;
@@ -42,7 +44,7 @@ function QueryBuilder(model, provider, functions) {
     this.center = this.createAlias(model.name);
     this.model = model;
     this.Promise = model.sequelize.Promise;
-    this.query = new Query(model.sequelize, model.sequelize.Promise);
+    this.query = new Query(model.sequelize, model.sequelize.Promise, transaction);
 
     this.query.from(getTableName(model), this.center);
 

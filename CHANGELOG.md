@@ -1,5 +1,8 @@
 # Saphyre Data – Changelog
 
+## Version 1.6.0
+* **[FEATURE]** Adding transaction to query
+
 ## Version 1.5.2
 * **[BUG-FIX]** Fixing association problems with Models with custom primaryKey field names
 

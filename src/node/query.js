@@ -14,13 +14,14 @@ var squelFactory = require('./squel.factory');
  * @param {Promise} Promise
  * @constructor
  */
-function Query(sequelize, Promise) {
+function Query(sequelize, Promise, transaction) {
     var squel = squelFactory.getBySequelize(sequelize);
 
     this.sequelize = sequelize;
     this.Promise = Promise;
     this.selectQuery = squel.select();
     this.countQuery = squel.select().field('0');
+    this.transaction = transaction;
 }
 
 Query.prototype.distinct = function () {
@@ -141,7 +142,8 @@ Query.prototype.list = function () {
     var select = this.selectQuery.toParam();
 
     return this.sequelize.query(select.text, {
-        replacements : select.values
+        replacements : select.values,
+        transaction: this.transaction
     }).spread(selectResult => {
         return selectResult;
     });
@@ -151,7 +153,8 @@ Query.prototype.single = function () {
     var select = this.selectQuery.limit(1).toParam();
 
     return this.sequelize.query(select.text, {
-        replacements : select.values
+        replacements : select.values,
+        transaction: this.transaction
     }).spread(result => {
         return result[0];
     });
@@ -162,7 +165,8 @@ Query.prototype.count = function () {
         query = 'SELECT COUNT(*) as count FROM (' + select.text + ') c';
 
     return this.sequelize.query(query, {
-        replacements : select.values
+        replacements : select.values,
+        transaction: this.transaction
     }).spread(countResult => {
         return parseInt(countResult[0].count, 10);
     });

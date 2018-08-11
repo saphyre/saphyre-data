@@ -286,7 +286,7 @@ function createObject(key, value) {
 }
 
 Model.prototype.buildQuery = function (config) {
-    var builder = new QueryBuilder(this.model, this.provider, this.functions),
+    var builder = new QueryBuilder(this.model, this.provider, this.functions, config),
         projection,
         criterias = this.criterias,
         sort,
