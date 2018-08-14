@@ -10,7 +10,12 @@ var Query = require('./query'),
 
 transformers[Sequelize.INTEGER.key] = value => value != null ? parseInt(value, 10) : null;
 transformers[Sequelize.BIGINT.key] = value => value != null ? value.toString() : null;
-transformers[Sequelize.BOOLEAN.key] = value => value != null ? !!value : null;
+transformers[Sequelize.BOOLEAN.key] = value => {
+    if (value === null) {
+        return value;
+    }
+    return value instanceof Buffer ? !!value.readInt8() : !!value;
+};
 
 function getDeletedAtColumn(model) {
     return model.options.deletedAt || 'deletedAt';

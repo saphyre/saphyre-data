@@ -1,5 +1,8 @@
 # Saphyre Data – Changelog
 
+## Version 1.6.1
+* **[BUG-FIX]** Fixed a bug that was making `BIT COLUMN` and `BOOLEAN` on Model to always return `true`
+
 ## Version 1.6.0
 * **[FEATURE]** Adding transaction to query
 
