@@ -1,4 +1,4 @@
-var squelFactory = require('./squel.factory');
+const squelFactory = require('./squel.factory');
 
 /**
  * @typedef Query~ExecResult
@@ -11,165 +11,148 @@ var squelFactory = require('./squel.factory');
 /**
  * @class
  * @param {Sequelize} sequelize
- * @param {Promise} Promise
  * @constructor
  */
-function Query(sequelize, Promise, transaction) {
-    var squel = squelFactory.getBySequelize(sequelize);
+class Query {
+  constructor(sequelize, transaction) {
+    const squel = squelFactory.getBySequelize(sequelize);
 
     this.sequelize = sequelize;
-    this.Promise = Promise;
     this.selectQuery = squel.select();
     this.countQuery = squel.select().field('0');
     this.transaction = transaction;
-}
+  }
 
-Query.prototype.distinct = function () {
+  distinct() {
     this.selectQuery.distinct.apply(this.selectQuery, arguments);
     return this;
-};
+  }
 
-Query.prototype.field = function () {
+  field() {
     this.selectQuery.field.apply(this.selectQuery, arguments);
     return this;
-};
+  }
 
-Query.prototype.fields = function () {
+  fields() {
     this.selectQuery.fields.apply(this.selectQuery, arguments);
     return this;
-};
+  }
 
-Query.prototype.from = function () {
+  from() {
     this.selectQuery.from.apply(this.selectQuery, arguments);
     this.countQuery.from.apply(this.countQuery, arguments);
     return this;
-};
+  }
 
-Query.prototype.join = function () {
+  join() {
     this.selectQuery.join.apply(this.selectQuery, arguments);
     this.countQuery.join.apply(this.countQuery, arguments);
     return this;
-};
+  }
 
-Query.prototype.left_join = function () {
+  left_join() {
     this.selectQuery.left_join.apply(this.selectQuery, arguments);
     this.countQuery.left_join.apply(this.countQuery, arguments);
     return this;
-};
+  }
 
-Query.prototype.right_join = function () {
+  right_join() {
     this.selectQuery.right_join.apply(this.selectQuery, arguments);
     this.countQuery.right_join.apply(this.countQuery, arguments);
     return this;
-};
+  }
 
-Query.prototype.outer_join = function () {
+  outer_join() {
     this.selectQuery.outer_join.apply(this.selectQuery, arguments);
     this.countQuery.outer_join.apply(this.countQuery, arguments);
     return this;
-};
+  }
 
-Query.prototype.where = function () {
+  where() {
     this.selectQuery.where.apply(this.selectQuery, arguments);
     this.countQuery.where.apply(this.countQuery, arguments);
     return this;
-};
+  }
 
-Query.prototype.having = function () {
+  having() {
     this.selectQuery.having.apply(this.selectQuery, arguments);
     this.countQuery.having.apply(this.countQuery, arguments);
     return this;
-};
+  }
 
-Query.prototype.order = function () {
+  order() {
     this.selectQuery.order.apply(this.selectQuery, arguments);
     return this;
-};
+  }
 
-Query.prototype.group = function () {
+  group() {
     this.selectQuery.group.apply(this.selectQuery, arguments);
     this.countQuery.group.apply(this.countQuery, arguments);
     return this;
-};
+  }
 
-Query.prototype.limit = function () {
+  limit() {
     this.selectQuery.limit.apply(this.selectQuery, arguments);
     return this;
-};
+  }
 
-Query.prototype.offset = function () {
+  offset() {
     this.selectQuery.offset.apply(this.selectQuery, arguments);
     return this;
-};
+  }
 
-Query.prototype.top = function () {
+  top() {
     this.selectQuery.top.apply(this.selectQuery, arguments);
     return this;
-};
+  }
 
-Query.prototype.join = function () {
-    this.selectQuery.join.apply(this.selectQuery, arguments);
-    this.countQuery.join.apply(this.countQuery, arguments);
-    return this;
-};
+  async exec() {
+    const pageSize = this.pageSize;
+    const page = this.page;
+    const [result, count] = await Promise.all([this.list(), this.count()]);
+    return {
+      list: result,
+      count: count,
+      page: parseInt(page, 10),
+      pages: Math.ceil(count / pageSize)
+    };
+  }
 
-Query.prototype.exec = function () {
-    var Promise = this.Promise,
-        pageSize = this.pageSize,
-        page = this.page;
-
-    return Promise.all([
-        this.list(),
-        this.count()
-    ]).spread((result, count) => {
-        return Promise.resolve({
-            list : result,
-            count : count,
-            page : parseInt(page, 10),
-            pages : Math.ceil(count / pageSize)
-        });
-    });
-};
-
-Query.prototype.page = function (page, size) {
+  page(page, size) {
     this.pageSize = size;
     this.page = page;
     this.offset((page - 1) * size).limit(size);
     return this;
-};
+  }
 
-Query.prototype.list = function () {
-    var select = this.selectQuery.toParam();
-
-    return this.sequelize.query(select.text, {
-        replacements : select.values,
-        transaction: this.transaction
-    }).spread(selectResult => {
-        return selectResult;
+  async list() {
+    const select = this.selectQuery.toParam();
+    const [selectResult] = await this.sequelize.query(select.text, {
+      replacements: select.values,
+      transaction: this.transaction
     });
-};
+    return selectResult;
+  };
 
-Query.prototype.single = function () {
-    var select = this.selectQuery.limit(1).toParam();
-
-    return this.sequelize.query(select.text, {
-        replacements : select.values,
-        transaction: this.transaction
-    }).spread(result => {
-        return result[0];
+  async single() {
+    const select = this.selectQuery.limit(1).toParam();
+    const [result] = await this.sequelize.query(select.text, {
+      replacements: select.values,
+      transaction: this.transaction
     });
-};
+    return result[0];
+  }
 
-Query.prototype.count = function () {
-    var select = this.countQuery.toParam(),
-        query = 'SELECT COUNT(*) as count FROM (' + select.text + ') c';
-
-    return this.sequelize.query(query, {
-        replacements : select.values,
-        transaction: this.transaction
-    }).spread(countResult => {
-        return parseInt(countResult[0].count, 10);
+  async count() {
+    const select = this.countQuery.toParam();
+    const query = 'SELECT COUNT(*) as count FROM (' + select.text + ') c';
+    const [countResult] = await this.sequelize.query(query, {
+      replacements: select.values,
+      transaction: this.transaction
     });
-};
+    return parseInt(countResult[0].count, 10);
+  }
+}
+
 
 module.exports = Query;

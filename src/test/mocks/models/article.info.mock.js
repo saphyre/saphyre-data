@@ -1,27 +1,23 @@
 module.exports = function (sequelize, DataTypes) {
 
-    var ArticleInfo = sequelize.define('ArticleInfo', {
+  const ArticleInfo = sequelize.define('ArticleInfo', {
+    article_info_id: {
+      type: DataTypes.BIGINT,
+      primaryKey: true,
+      autoIncrement: true
+    },
 
-        article_info_id : {
-            type : DataTypes.BIGINT,
-            primaryKey : true,
-            autoIncrement : true
-        },
+    status: DataTypes.INTEGER
+  }, {
+    tableName: 'test_article_info',
+  });
 
-        status : DataTypes.INTEGER
-
-    }, {
-        tableName : 'test_article_info',
-
-        classMethods: {
-            associate: function (models) {
-                ArticleInfo.belongsTo(models.Author, {
-                    as : 'Owner',
-                    foreignKey : 'author_id'
-                });
-            }
-        }
+  ArticleInfo.associate = models => {
+    ArticleInfo.belongsTo(models.Author, {
+      as: 'Owner',
+      foreignKey: 'author_id'
     });
+  };
 
-    return ArticleInfo;
+  return ArticleInfo;
 };

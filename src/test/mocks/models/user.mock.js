@@ -1,16 +1,12 @@
 module.exports = function (sequelize, DataTypes) {
+  return sequelize.define('User', {
+    user_id: {
+      type: DataTypes.BIGINT,
+      primaryKey: true,
+      autoIncrement: true
+    },
 
-    var User = sequelize.define('User', {
+    name: DataTypes.STRING
 
-        user_id : {
-            type : DataTypes.BIGINT,
-            primaryKey : true,
-            autoIncrement : true
-        },
-
-        name : DataTypes.STRING
-
-    }, { tableName : 'test__user' });
-
-    return User;
+  }, { tableName: 'test__user' });
 };

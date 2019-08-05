@@ -251,7 +251,7 @@ describe('saphyre data', function () {
                 }
             ]);
         }).then(function () {
-            return Article.findById(1);
+            return Article.findByPk(1);
         }).then(function (article) {
             return Tag.findAll().then(function (tags) {
                 return article.setTags(tags);
@@ -454,30 +454,30 @@ describe('saphyre data', function () {
         });
     });
 
-    it('should throw error on unknown properties', () => {
+    it('should throw error on unknown properties', async () => {
         var articleData = mock.data.article,
             error;
 
-        return articleData.single({
-            projection : 'error'
-        }).catch(function (err) {
+        try {
+            await articleData.single({ projection : 'error' })
+        } catch (err) {
             error = err;
-        }).then(function () {
-            expect(error).to.exist;
-        });
+        }
+
+        expect(error).to.exist;
     });
 
-    it('should throw error on unregistered projection', () => {
+    it('should throw error on unregistered projection', async () => {
         var articleData = mock.data.article,
             error;
 
-        return articleData.single({
-            projection : 'no-projection'
-        }).catch(function (err) {
+        try {
+            await articleData.single({ projection : 'no-projection' })
+        } catch (err) {
             error = err;
-        }).then(function () {
-            expect(error).to.exist;
-        });
+        }
+
+        expect(error).to.exist;
     });
 
     it('should left join associations', () => {

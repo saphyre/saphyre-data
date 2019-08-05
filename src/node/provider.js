@@ -1,7 +1,7 @@
-var Model = require('./model'),
-    Consts = require('./consts'),
-    Criteria = require('./criteria'),
-    Query = require('./query');
+const Model = require('./model');
+const Consts = require('./consts');
+const Criteria = require('./criteria');
+const Query = require('./query');
 
 require('./squel.custom');
 
@@ -11,27 +11,32 @@ require('./squel.custom');
  * This is the main instance of Saphyre Data, used to manage all models.
  *
  * @class
- * @constructor
  */
-function Provider() {
-    this.models = {};
-}
+class Provider {
 
-/**
- * Creates a new Model
- * @see {Model}
- * @param config Passes to Model constructor
- * @returns {Model}
- */
-Provider.prototype.createModel = function (config) {
-    var model = new Model(this, config);
+  /**
+   * @constructor
+   */
+  constructor() {
+    this.models = {};
+  }
+
+  /**
+   * Creates a new Model
+   * @see {Model}
+   * @param config Passes to Model constructor
+   * @returns {Model}
+   */
+  createModel(config) {
+    const model = new Model(this, config);
     this.models[model.model.name] = model;
     return model;
-};
+  }
 
-Provider.prototype.getModel = function (sequelizeModel) {
+  getModel(sequelizeModel) {
     return this.models[sequelizeModel.name];
-};
+  }
+}
 
 Provider.prototype.OPERATOR = Criteria.prototype.OPERATOR;
 Provider.prototype.Query = Query;

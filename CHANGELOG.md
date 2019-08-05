@@ -1,5 +1,8 @@
 # Saphyre Data – Changelog
 
+## Version 2.0.0
+* **[ENHANCEMENT]** Added support to sequelize 5
+
 ## Version 1.6.1
 * **[BUG-FIX]** Fixed a bug that was making `BIT COLUMN` and `BOOLEAN` on Model to always return `true`
 

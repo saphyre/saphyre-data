@@ -1,10 +1,10 @@
-var Projection = require('./projection'),
-    Consts = require('./consts'),
-    QueryBuilder = require('./query.builder'),
-    squelFactory = require('./squel.factory'),
-    Criteria = require('./criteria'),
-    Sort = require('./sort'),
-    _ = require('lodash');
+const Projection = require('./projection');
+const Consts = require('./consts');
+const QueryBuilder = require('./query.builder');
+const squelFactory = require('./squel.factory');
+const Criteria = require('./criteria');
+const Sort = require('./sort');
+const _ = require('lodash');
 
 ///**
 // * @typedef {Model~functions}
@@ -24,49 +24,48 @@ var Projection = require('./projection'),
  * @constructor
  */
 function Model(provider, options) {
-    var model;
-    if (options.model) {
-        model = options.model;
-    } else {
-        model = options;
-        options = {};
-    }
+  let model;
+  if (options.model) {
+    model = options.model;
+  } else {
+    model = options;
+    options = {};
+  }
 
-    if (options.cached) {
-        this.cached = true;
-        this.timeout = options.timeout;
-    }
+  if (options.cached) {
+    this.cached = true;
+    this.timeout = options.timeout;
+  }
 
-    this.model = model;
-    this.Promise = model.sequelize.Promise;
-    this.squel = squelFactory.get(model);
+  this.model = model;
+  this.squel = squelFactory.get(model);
 
-    try {
-        /**
-         * Functions (agregations) available
-         * @type {Object}
-         * @property {Function} sum             To sum on the given property
-         * @property {Function} count           To count on the given property
-         * @property {Function} convert         Used only in MySQL to convert BLOB to utf8
-         * @property {Function} group_concat    Will join the results with comma
-         */
-        this.functions = require('./functions/' + model.sequelize.options.dialect);
-    } catch (err) {
-        throw new Error('Dialect not supported');
-    }
+  try {
+    /**
+     * Functions (agregations) available
+     * @type {Object}
+     * @property {Function} sum             To sum on the given property
+     * @property {Function} count           To count on the given property
+     * @property {Function} convert         Used only in MySQL to convert BLOB to utf8
+     * @property {Function} group_concat    Will join the results with comma
+     */
+    this.functions = require('./functions/' + model.sequelize.options.dialect);
+  } catch (err) {
+    throw new Error('Dialect not supported');
+  }
 
-    this.provider = provider;
-    this.criterias = {};
-    this.sorts = {};
-    this.sorts[Consts.RANDOM] = new Sort(Consts.RANDOM);
+  this.provider = provider;
+  this.criterias = {};
+  this.sorts = {};
+  this.sorts[Consts.RANDOM] = new Sort(Consts.RANDOM);
 
-    this.projections = {
-        '$count' : new Projection({})
-    };
+  this.projections = {
+    '$count': new Projection({})
+  };
 }
 
 function diffFromNow(date) {
-    return new Date().getTime() - date.getTime();
+  return new Date().getTime() - date.getTime();
 }
 
 /**
@@ -135,8 +134,8 @@ function diffFromNow(date) {
  * });
  */
 Model.prototype.criteria = function (name, config) {
-    this.criterias[name] = new Criteria(config, false, this.squel);
-    return this;
+  this.criterias[name] = new Criteria(config, false, this.squel);
+  return this;
 };
 
 /**
@@ -147,8 +146,8 @@ Model.prototype.criteria = function (name, config) {
  * @returns {Model} this
  */
 Model.prototype.criteriaOR = function (name, config) {
-    this.criterias[name] = new Criteria(config, true, this.squel);
-    return this;
+  this.criterias[name] = new Criteria(config, true, this.squel);
+  return this;
 };
 
 /**
@@ -209,9 +208,9 @@ Model.prototype.criteriaOR = function (name, config) {
  * }
  */
 Model.prototype.projection = function (name, config) {
-    var projection = new Projection(config);
-    this.projections[name] = projection;
-    return projection;
+  const projection = new Projection(config);
+  this.projections[name] = projection;
+  return projection;
 };
 
 /**
@@ -234,8 +233,8 @@ Model.prototype.projection = function (name, config) {
  * });
  */
 Model.prototype.sort = function (name, config) {
-    this.sorts[name] = new Sort(config);
-    return this;
+  this.sorts[name] = new Sort(config);
+  return this;
 };
 
 /**
@@ -256,13 +255,13 @@ Model.prototype.sort = function (name, config) {
  * model.sort('-name', { name : 'DESC' });
  */
 Model.prototype.sortMultiple = function (config) {
-    _.forEach(config, (value, key) => {
-        if (_.isString(value)) {
-            this.sort(value, createObject(key, 'ASC'));
-            this.sort(`-${value}`, createObject(key, 'DESC'));
-        }
-    });
-    return this;
+  _.forEach(config, (value, key) => {
+    if (_.isString(value)) {
+      this.sort(value, createObject(key, 'ASC'));
+      this.sort(`-${value}`, createObject(key, 'DESC'));
+    }
+  });
+  return this;
 };
 
 /**
@@ -271,72 +270,72 @@ Model.prototype.sortMultiple = function (config) {
  * @param {string} name The projection name
  */
 Model.prototype.sortProjection = function (name) {
-    var projection = this.projections[name];
-    if (!projection) {
-        throw new Error(`Undefined projection '${name}`);
-    }
-    return this.sortMultiple(projection.config);
+  const projection = this.projections[name];
+  if (!projection) {
+    throw new Error(`Undefined projection '${name}`);
+  }
+  return this.sortMultiple(projection.config);
 };
 
 function createObject(key, value) {
-    'use strict';
-    let obj = {};
-    obj[key] = value;
-    return obj;
+  'use strict';
+  let obj = {};
+  obj[key] = value;
+  return obj;
 }
 
 Model.prototype.buildQuery = function (config) {
-    var builder = new QueryBuilder(this.model, this.provider, this.functions, config),
-        projection,
-        criterias = this.criterias,
-        sort,
-        sorts = this.sorts,
-        grouped;
+  let builder = new QueryBuilder(this.model, this.provider, this.functions, config),
+    projection,
+    criterias = this.criterias,
+    sort,
+    sorts = this.sorts,
+    grouped;
 
-    config = config || {};
+  config = config || {};
 
-    if (config.projection === undefined) {
-        config.projection = 'default';
-    }
+  if (config.projection === undefined) {
+    config.projection = 'default';
+  }
 
-    projection = this.projections[config.projection];
+  projection = this.projections[config.projection];
 
-    if (projection === undefined) {
-        throw new Error('Undefined projection `' + config.projection + '`');
-    }
+  if (projection === undefined) {
+    throw new Error('Undefined projection `' + config.projection + '`');
+  }
 
-    grouped = builder.projection(projection, config.criteria);
+  grouped = builder.projection(projection, config.criteria);
 
-    if (config.sort !== undefined) {
-        sort = _.isArray(config.sort) ? config.sort : [config.sort];
-        _.forEach(sort, function (item) {
-            item = sorts[item];
+  if (config.sort !== undefined) {
+    sort = _.isArray(config.sort) ? config.sort : [config.sort];
+    _.forEach(sort, function (item) {
+      item = sorts[item];
 
-            if (item === undefined) {
-                throw new Error('Undefined sort `' + config.sort + '`');
-            }
+      if (item === undefined) {
+        throw new Error('Undefined sort `' + config.sort + '`');
+      }
 
-            builder.sort(item);
-        });
-    }
+      builder.sort(item);
+    });
+  }
 
-    if (config.criteria !== undefined) {
-        _.forEach(config.criteria, (values, name) => {
-            if (values !== undefined) {
-                var criteria = criterias[name];
-                if (criteria === undefined) {
-                    throw new Error('Criteria named `' + name + '` not found');
-                }
-                criteria.apply(builder, values, { grouped : grouped });
-            }
-        });
-    }
+  if (config.criteria !== undefined) {
+    _.forEach(config.criteria, (values, name) => {
+      if (values !== undefined) {
+        const criteria = criterias[name];
+        if (criteria === undefined) {
+          throw new Error('Criteria named `' + name + '` not found');
+        }
+        criteria.apply(builder, values, { grouped: grouped });
+      }
+    });
+  }
 
-    if (config.page && config.pageSize) {
-        builder.query.page(config.page, config.pageSize);
-    }
+  if (config.page && config.pageSize) {
+    builder.query.page(config.page, config.pageSize);
+  }
 
-    return builder;
+  return builder;
 };
 
 /**
@@ -367,49 +366,44 @@ Model.prototype.buildQuery = function (config) {
  *     // result.count -> the total elements
  * });
  */
-Model.prototype.requestList = function (config) {
-    var self = this,
-        Promise = this.Promise,
-        builder,
-        isCached;
+Model.prototype.requestList = async function (config) {
+  let self = this,
+    builder,
+    isCached;
 
-    try {
-        config = config || {};
+  config = config || {};
 
-        config.page = parseInt(config.page, 10);
-        config.pageSize = parseInt(config.pageSize, 10);
+  config.page = parseInt(config.page, 10);
+  config.pageSize = parseInt(config.pageSize, 10);
 
-        if (config.pageSize == undefined || isNaN(config.pageSize)) {
-            return Promise.reject(new Error('Page size must be a valid number'));
-        }
-        if (config.page == undefined || isNaN(config.page)) {
-            config.page = 1;
-        }
+  if (config.pageSize == undefined || isNaN(config.pageSize)) {
+    throw new Error('Page size must be a valid number');
+  }
+  if (config.page == undefined || isNaN(config.page)) {
+    config.page = 1;
+  }
 
-        builder = this.buildQuery(config);
+  builder = this.buildQuery(config);
 
-        isCached = !config.page && !config.pageSize && this.cached && config.cached !== false;
+  isCached = !config.page && !config.pageSize && this.cached && config.cached !== false;
 
-        if (isCached && this.cache && this.cache.timestamp && diffFromNow(this.cache.timestamp) < this.timeout) {
-            return Promise.resolve({
-                list : this.cache.result,
-                count : this.cache.result.length
-            });
-        }
+  if (isCached && this.cache && this.cache.timestamp && diffFromNow(this.cache.timestamp) < this.timeout) {
+    return {
+      list: this.cache.result,
+      count: this.cache.result.length
+    };
+  }
 
-        return builder.exec().then(result => {
-            if (isCached) {
-                self.cache = {
-                    timestamp : new Date(),
-                    result : result.list
-                };
-            }
-            result.sort = config.sort;
-            return Promise.resolve(result);
-        });
-    } catch (err) {
-        return Promise.reject(err);
+  return builder.exec().then(result => {
+    if (isCached) {
+      self.cache = {
+        timestamp: new Date(),
+        result: result.list
+      };
     }
+    result.sort = config.sort;
+    return result;
+  });
 };
 
 /**
@@ -434,35 +428,30 @@ Model.prototype.requestList = function (config) {
  *     // list -> the list
  * });
  */
-Model.prototype.list = function (config) {
-    var self = this,
-        Promise = this.Promise,
-        builder,
-        cached;
+Model.prototype.list = async function (config) {
+  let self = this,
+    builder,
+    cached;
 
-    config = config || {};
+  config = config || {};
 
-    cached = config.cached !== false && this.cached;
+  cached = config.cached !== false && this.cached;
 
-    try {
-        builder = this.buildQuery(config);
+  builder = this.buildQuery(config);
 
-        if (cached && this.cache && this.cache.timestamp && diffFromNow(this.cache.timestamp) < this.timeout) {
-            return Promise.resolve(this.cache.result);
-        }
+  if (cached && this.cache && this.cache.timestamp && diffFromNow(this.cache.timestamp) < this.timeout) {
+    return this.cache.result;
+  }
 
-        return builder.list().then(list => {
-            if (cached) {
-                self.cache = {
-                    timestamp : new Date(),
-                    result : list
-                };
-            }
-            return Promise.resolve(list);
-        });
-    } catch (err) {
-        return Promise.reject(err);
+  return builder.list().then(list => {
+    if (cached) {
+      self.cache = {
+        timestamp: new Date(),
+        result: list
+      };
     }
+    return list;
+  });
 };
 
 /**
@@ -483,19 +472,14 @@ Model.prototype.list = function (config) {
  *     // count -> the count
  * });
  */
-Model.prototype.count = function (config) {
-    var Promise = this.Promise,
-        conf = { projection : '$count' };
+Model.prototype.count = async function (config) {
+  let conf = { projection: '$count' };
 
-    if (config && config.criteria) {
-        conf.criteria = config.criteria;
-    }
+  if (config && config.criteria) {
+    conf.criteria = config.criteria;
+  }
 
-    try {
-        return this.buildQuery(conf).count();
-    } catch (err) {
-        return Promise.reject(err);
-    }
+  return this.buildQuery(conf).count();
 };
 
 /**
@@ -522,12 +506,8 @@ Model.prototype.count = function (config) {
  * });
  */
 Model.prototype.single = function (config) {
-    try {
-        var builder = this.buildQuery(config);
-        return builder.single();
-    } catch (err) {
-        return Promise.reject(err);
-    }
+  const builder = this.buildQuery(config);
+  return builder.single();
 };
 
 /**
@@ -537,7 +517,7 @@ Model.prototype.single = function (config) {
  * @returns {Projection}
  */
 Model.prototype.getProjection = function (name) {
-    return this.projections[name];
+  return this.projections[name];
 };
 
 module.exports = Model;
