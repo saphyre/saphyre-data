@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha ./src/test",
-    "cover": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- src/test -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
+    "cover": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- src/test -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "repository": {
     "type": "git",
@@ -20,7 +22,8 @@
   "license": "MIT",
   "dependencies": {
     "lodash": "^4.6.1",
-    "squel": "^5.0.0"
+    "squel": "^5.0.0",
+    "snyk": "^1.316.1"
   },
   "devDependencies": {
     "chai": "^4.2.0",
@@ -32,5 +35,6 @@
     "pg": "^7.12.0",
     "sequelize": "^5.12.3",
     "sqlite3": "^4.0.9"
-  }
+  },
+  "snyk": true
 }
